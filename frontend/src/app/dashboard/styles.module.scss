@@ -1,0 +1,78 @@
+.Main {
+  width: 100vw;
+  height: 100vh;
+  background-color: #fff;
+  color: #000;
+  display: flex;
+  flex-direction: column;
+
+  .Separator {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+
+    .Side {
+      width: 30%;
+      min-width: 80px;
+      //max-width: 300px; // Limite máximo de largura para o SideMenu em telas grandes
+      transition: width 0.3s ease;
+    }
+
+    .ContentArea {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      .Header {
+        flex-shrink: 0;
+        margin-top: 30px;
+      }
+
+      .Content {
+        flex: 1;
+        padding: 0 20px;
+        overflow: auto;
+        display: flex;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+// Media queries para responsividade
+@media (max-width: 768px) {
+  .Separator {
+    flex-direction: column;
+
+    .Side {
+      width: 100%; // Usar toda a largura disponível em dispositivos móveis
+      height: auto;
+    }
+
+    .ContentArea {
+      .Content {
+        padding: 10px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .ContentArea .Content {
+    padding: 5px;
+  }
+}
+
+@media(min-width: 770px) {
+  .Main {
+
+    .Separator {
+
+      .Side {
+
+        max-width: 300px; // Limite máximo de largura para o SideMenu em telas grandes
+
+      }
+    }
+  }
+}

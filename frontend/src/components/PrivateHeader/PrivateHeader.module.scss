@@ -1,0 +1,43 @@
+.Header{
+    width: 100vw;
+    height: 7vh;
+
+    background-color: #1f0000;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    img{
+        width: 200px;
+        height: 30px;
+
+        &:last-child{
+            width: 100px;
+            height: 25px;
+            margin-bottom: 10px;
+        }
+    }
+}
+
+@media(min-width: 768px){
+    .Header{
+        height: 6vh;
+        flex-direction: row;
+        justify-content: space-between;
+
+        img{
+            width: 200px;
+            height: 30px;
+
+            margin: 0 0 0 10px;
+
+            &:last-child{
+                width: 150px;
+                height: 35px;
+                margin: 0 10px 0 0;
+            }
+        }
+    }
+}

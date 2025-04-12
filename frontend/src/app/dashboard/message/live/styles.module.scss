@@ -1,0 +1,100 @@
+.Main {
+  display: flex;
+  width: 90%;
+  max-width: 90%;
+  height: 60vh;
+  background-color: #f5f5f5; // Ajuste conforme necessário para o fundo
+
+  .ContactList {
+    width: 25%;
+    background-color: #fff;
+    border-right: 1px solid #ddd;
+    padding: 1px;
+    
+    h2 {
+      font-size: 16px;
+      color: #4caf50; // Cor do texto do cabeçalho "Usuários WhatsApp"
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .ContactItem {
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #ddd;
+      
+      &:hover {
+        background-color: #f0f0f0;
+      }
+    }
+  }
+
+  .ChatWindow {
+    width: 75%;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+
+    .ChatHeader {
+      padding: 10px;
+      background-color: #4caf50;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .MessageList {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background-color: #f9f9f9; // Cor de fundo da área de mensagens
+    }
+
+    .MessageItem {
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 5px;
+
+      &--sent {
+        background-color: #e1ffc7;
+        align-self: flex-end;
+      }
+
+      &--received {
+        background-color: #fff;
+        align-self: flex-start;
+      }
+    }
+
+    .InputArea {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      background-color: #f5f5f5;
+
+      .InputField {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-right: 10px;
+      }
+
+      .SendButton {
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+
+        &:hover {
+          background-color: #45a049;
+        }
+      }
+    }
+  }
+}

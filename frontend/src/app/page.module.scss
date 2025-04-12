@@ -1,0 +1,192 @@
+.Main{
+  width: 100vw;
+  height: 100vh;
+
+
+  .Content{
+    width: 100%;
+    height: calc(100% - 7vh);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    footer{
+      align-self: center;
+      position: absolute;
+      bottom: 0;
+      margin-bottom: 5px;
+
+      p{
+        a{
+          color: #dc7621;
+        }
+      }
+    }
+  }
+}
+
+@media(min-width: 1024px){
+  .Main{
+    .Content{
+      align-items: flex-end;
+      padding: 30px;
+    }
+  }
+}
+
+@media(max-width: 320px){
+  .Main{
+    .Content{
+      background: url('../public/bg320x480px.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(min-width: 320px){
+  .Main{
+    .Content{
+      background: url('../public/bg320x480px.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+
+@media(min-width: 360px){
+  .Main{
+    .Content{
+      background: url('../public/bg360x640px.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(min-width: 375px){
+  .Main{
+    .Content{
+      background: url('../public/bg375x812px.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(min-width: 400px){
+  .Main{
+    .Content{
+      background: url('../public/bg400x560px.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(min-width: 414px){
+  .Main{
+    .Content{
+      background: url('../public/bg414x896px.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(min-width: 600px){
+  .Main{
+    .Content{
+      background: url('../public/bg600x800px.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(min-width: 768px){
+  .Main{
+    .Content{
+      background: url('../public/bg768x1024px.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(min-width: 834px){
+  .Main{
+    .Content{
+      background: url('../public/bg834x1112px.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(max-width: 1279px){
+  .Main{
+    .Content{
+      height: calc(100% - 5vh);
+    }
+  }
+}
+
+
+@media(min-width: 1280px){
+  .Main{
+    .Content{
+      background: url('../public/bg1280x800.png') no-repeat center;
+      background-size: cover;
+      height: calc(100% - 5vh);
+    }
+  }
+}
+
+@media(min-width: 1366px){
+  .Main{
+    .Content{
+      background: url('../public/bg1366x768.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(min-width: 1440px){
+  .Main{
+    .Content{
+      background: url('../public/bg1440x900.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(min-width: 1536px){
+  .Main{
+    .Content{
+      background: url('../public/bg1536x864.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(min-width: 1920px){
+  .Main{
+    .Content{
+      background: url('../public/bg1920x1080.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(min-width: 2560px){
+  .Main{
+    .Content{
+      background: url('../public/bg2560x1440.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
+
+@media(min-width: 3840px){
+  .Main{
+    .Content{
+      background: url('../public/bg3840x2160.png') no-repeat center;
+      background-size: cover;
+    }
+  }
+}
