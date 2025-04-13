@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 class UserController{
     public function canSend(Request $request)
     {
+
         try {
             $user = $request->user();
 
