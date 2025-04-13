@@ -101,7 +101,7 @@ function extractToken(req, res, next) {
     next();
 }
 
-// Rota inicial para obter QR Code - compatível com o frontend
+// Rota inicial para obter QR Code - compatível com o frontend_old
 app.get('/start-whatsapp', extractToken, async (req, res) => {
     try {
         const token = req.token;
