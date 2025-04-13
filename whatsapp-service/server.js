@@ -23,8 +23,21 @@ client.on('ready', () => {
 
 // Rota para enviar mensagens (Chamada pelo Laravel)
 app.post('/send-message', async (req, res) => {
-    const {number, message} = req.body;
+    const {number, message, media } = req.body;
     try{
+        if(media){
+            //Baixa a mídia do storage do Laravel
+            const mediaResponse = await axios.get(media, { responseType: 'stream' });
+            const mediaPath = `/tmp/${path.basename(media)}`;
+            await pipeline(mediaResponse.data, fs.createWriteStream(mediaPath));
+
+            //Envia com midia
+            const mediaMessage = MessageMedia.fromFilePath(mediaPath);
+            await client.sendMessage(`${number}@c.us`, mediaMessage, { caption: message });
+        } else {
+            // Envia apenas texto
+            await client.sendMessage(`${number}@c.us`, message);
+        }
         await client.sendMessage(`${number}@c.US`, message);
         res.json({success: true});
     } catch (e) {
