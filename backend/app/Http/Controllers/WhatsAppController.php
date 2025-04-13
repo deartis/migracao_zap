@@ -1,52 +1,94 @@
 <?php
 
-namespace App\Http\Controllers;
+// app/Http/Controllers/Api/WhatsAppController.php
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
+use App\Http\Requests\SendMessageRequest;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 class WhatsAppController extends Controller
 {
-    protected $whatsappServiceUrl;
+    protected $whatsappService;
 
-    public function __construct()
+    public function __construct(WhatsAppService $whatsappService)
     {
-        $this->whatsappServiceUrl = env('WHATSAPP_SERVICE_URL', 'http://localhost:3000');
+        $this->whatsappService = $whatsappService;
     }
 
-    public function sendMessage(Request $request)
+    /**
+     * Inicia o WhatsApp e retorna QR code ou status
+     */
+    public function start(Request $request): JsonResponse
     {
         try {
-            $validated = $request->validate([
-                'number' => 'required|string',
-                'message' => 'required|string',
-                'media' => 'nullable|string',
-            ]);
-
-            // Passa o token de autenticação para o serviço do WhatsApp
-            $response = Http::withHeaders([
-                'Authorization' => $request->header('Authorization')
-            ])->post($this->whatsappServiceUrl . '/send-message', [
-                'number' => $validated['number'],
-                'message' => $validated['message'],
-                'media' => $validated['media'] ?? null,
-            ]);
-
+            $response = $this->whatsappService->startWhatsApp($this->getUserToken($request));
             return response()->json($response->json(), $response->status());
         } catch (\Exception $e) {
-            Log::error('Erro no WhatsAppController: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    // Webhook para receber mensagens (se necessário)
-    public function handleWebhook(Request $request)
+    /**
+     * Verifica o status da conexão
+     */
+    public function checkStatus(Request $request): JsonResponse
     {
-        // Lógica para processar mensagens recebidas
-        return response()->json(['success' => true]);
+        try {
+            $response = $this->whatsappService->checkConnection($this->getUserToken($request));
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Envia uma mensagem
+     */
+    public function sendMessage(SendMessageRequest $request): JsonResponse
+    {
+        try {
+            $validated = $request->validated();
+
+            $response = $this->whatsappService->sendMessage(
+                $validated['number'],
+                $validated['message'],
+                $validated['media'] ?? null,
+                $this->getUserToken($request)
+            );
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Encerra uma sessão
+     */
+    public function deleteSession(Request $request): JsonResponse
+    {
+        try {
+            $response = $this->whatsappService->deleteSession($this->getUserToken($request));
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Obtém o token do usuário autenticado
+     */
+    protected function getUserToken(Request $request): ?string
+    {
+        // Adapte conforme seu sistema de autenticação
+        // Exemplo usando Sanctum/autenticação padrão do Laravel
+        if ($request->user()) {
+            return $request->user()->api_token ?? null;
+        }
+
+        return null;
     }
 }
