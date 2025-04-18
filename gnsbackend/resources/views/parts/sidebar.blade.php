@@ -49,7 +49,7 @@
                             <i class="bi bi-people"></i>
                             <span>Em massa: Contatos do telefone</span>
                         </a>
-                        <a href="#" class="menu-item ps-5">
+                        <a href="{{ route('page.single.contact') }}" class="menu-item ps-5">
                             <i class="bi bi-phone"></i>
                             <span>Único número</span>
                         </a>
@@ -92,6 +92,14 @@
                         <a href="#" class="menu-item ps-5">
                             <i class="bi bi-sliders"></i>
                             <span>Perfil do usuário</span>
+                        </a>
+                        <a href="#" class="menu-item ps-5">
+                            <i class="bi bi-qr-code-scan"></i>
+                            <span>Conectar ao WhatsApp</span>
+                        </a>
+                        <a href="{{ route('adm.user') }}" class="menu-item ps-5">
+                            <i class="bi bi-person-lock"></i>
+                            <span>Administrativo</span>
                         </a>
                         <a href="#" class="menu-item ps-5">
                             <i class="bi bi-box-arrow-right"></i>

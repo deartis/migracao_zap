@@ -195,6 +195,13 @@
 <body>
 @include('parts.sidebar')
 
+<!-- Main Content -->
+<div class="main-content" id="mainContent">
+    <div class="container-fluid">
+        @yield('content')
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {

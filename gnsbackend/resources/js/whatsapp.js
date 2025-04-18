@@ -1,47 +1,172 @@
-async function startWhatsApp() {
-    try {
-        const response = await fetch('/api/whatsapp/start', {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include' // Para enviar cookies de autenticação
-        });
+// Configuração inicial
+document.addEventListener('DOMContentLoaded', function () {
+    // Adicionar isto à sua requisição
+    const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('XSRF-TOKEN='))
+        ?.split('=')[1];
 
+    // Verifique se isso retorna um valor válido
+    checkStatus();
+    setInterval(checkStatus, 5000); // Verificar status a cada 5 segundos
+
+    // Botões
+    document.getElementById('connect-btn').addEventListener('click', connectWhatsApp);
+    document.getElementById('send-btn').addEventListener('click', sendMessage);
+});
+
+// Verificar status da conexão
+async function checkStatus() {
+    try {
+        const response = await fetch('/whatsapp-status');
         const data = await response.json();
 
-        if (data.qrCode) {
-            // Exibe o QR code para o usuário escanear
-            document.getElementById('qrcode').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.qrCode)}" alt="QR Code">`;
-        } else if (data.status === 'connected') {
-            // Já está conectado
-            document.getElementById('status').textContent = `Conectado com o número: ${data.phoneNumber}`;
-        }
-    } catch (error) {
-        console.error('Erro ao iniciar WhatsApp:', error);
-    }
-}
+        const statusElement = document.getElementById('connection-status');
+        const phoneElement = document.getElementById('phone-number');
 
-// Verificar status periodicamente
-setInterval(async () => {
-    try {
-        const response = await fetch('/api/whatsapp/status', {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-            },
-            credentials: 'include'
-        });
+        // Atualizar status
+        statusElement.textContent = data.status || 'Desconhecido';
 
-        const data = await response.json();
-        document.getElementById('status').textContent = `Status: ${data.status}`;
-
+        // Atualizar classes CSS baseado no status
+        statusElement.className = 'badge';
         if (data.status === 'connected') {
-            document.getElementById('qrcode').innerHTML = '';
-            document.getElementById('phone').textContent = `Número: ${data.phoneNumber}`;
+            statusElement.classList.add('bg-success');
+            document.getElementById('message-form').classList.remove('d-none');
+            document.getElementById('qr-container').classList.add('d-none');
+
+            if (data.phoneNumber) {
+                phoneElement.textContent = `Número conectado: ${data.phoneNumber}`;
+            }
+        } else if (data.status === 'connecting') {
+            statusElement.classList.add('bg-warning', 'text-dark');
+        } else {
+            statusElement.classList.add('bg-secondary');
+            document.getElementById('message-form').classList.add('d-none');
         }
     } catch (error) {
         console.error('Erro ao verificar status:', error);
     }
-}, 5000);
+}
+
+// Conectar ao WhatsApp e mostrar QR Code
+async function connectWhatsApp() {
+    try {
+        document.getElementById('qr-container').classList.remove('d-none');
+        document.getElementById('qr-placeholder').innerHTML = '<p class="text-muted">Carregando QR Code...</p>';
+
+        const response = await fetch('/whatsapp-connect');
+        const data = await response.json();
+
+        if (data.qrCode) {
+            // Usar API gratuita para mostrar QR code como imagem
+            const qrImage = document.createElement('img');
+            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.qrCode)}`;
+            qrImage.alt = 'WhatsApp QR Code';
+            qrImage.className = 'mx-auto';
+
+            document.getElementById('qr-placeholder').innerHTML = '';
+            document.getElementById('qr-placeholder').appendChild(qrImage);
+        } else if (data.status === 'connected') {
+            document.getElementById('qr-container').classList.add('d-none');
+            document.getElementById('message-form').classList.remove('d-none');
+            await checkStatus(); // Atualizar status
+        } else {
+            document.getElementById('qr-placeholder').innerHTML =
+                '<p class="text-danger">Não foi possível gerar o QR Code. Por favor, tente novamente.</p>';
+        }
+    } catch (error) {
+        console.error('Erro ao conectar:', error);
+        document.getElementById('qr-placeholder').innerHTML =
+            `<p class="text-danger">Erro: ${error.message}</p>`;
+    }
+}
+
+// Enviar mensagem
+async function sendMessage() {
+    try {
+        const resultContainer = document.getElementById('result-container');
+        resultContainer.classList.remove('d-none');
+        document.getElementById('result').textContent = 'Enviando...';
+
+        // Obter dados do formulário
+        const number = document.getElementById('number-input').value.trim();
+        const message = document.getElementById('message-input').value.trim();
+        const media = document.getElementById('media-input').value.trim() || null;
+
+        // Validação simples
+        if (!number || !message) {
+            throw new Error('Número e mensagem são obrigatórios');
+        }
+
+        // Obter o token CSRF - com fallbacks
+        let token;
+        const hiddenInput = document.querySelector('input[name="_token"]');
+        const metaTag = document.querySelector('meta[name="csrf-token"]');
+
+        if (hiddenInput && hiddenInput.value) {
+            token = hiddenInput.value;
+            console.log("Usando token do input hidden:", token);
+        } else if (metaTag && metaTag.content) {
+            token = metaTag.content;
+            console.log("Usando token da meta tag:", token);
+        } else {
+            // Tenta obter do cookie como último recurso
+            const encodedToken = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('XSRF-TOKEN='))
+                ?.split('=')[1];
+
+            if (encodedToken) {
+                token = decodeURIComponent(encodedToken);
+                console.log("Usando token do cookie:", token);
+            } else {
+                throw new Error('Token CSRF não encontrado. Recarregue a página.');
+            }
+        }
+
+        // Incluir token no corpo também, além do header
+        const requestData = {
+            _token: token,
+            number,
+            message,
+            media
+        };
+
+        console.log("Enviando requisição para:", '/whatsapp-send');
+        console.log("Dados:", requestData);
+
+        const response = await fetch('/whatsapp-send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+                // Adicionando este cabeçalho específico do Laravel
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        // Verificar se a resposta é válida antes de tentar processar como JSON
+        if (response.ok) {
+            const data = await response.json();
+            resultContainer.classList.remove('bg-light', 'bg-danger', 'bg-danger-subtle');
+            resultContainer.classList.add('bg-success-subtle', 'border-success');
+            // Exibir resultado
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        } else {
+            console.error('Erro na requisição:', response.status);
+            const errorText = await response.text();
+            console.error('Resposta do servidor:', errorText);
+
+            resultContainer.classList.remove('bg-light', 'bg-success-subtle', 'border-success');
+            resultContainer.classList.add('bg-danger-subtle', 'border-danger');
+            document.getElementById('result').textContent = `Erro: Status ${response.status}. ${errorText}`;
+        }
+    } catch (error) {
+        console.error('Erro ao enviar mensagem:', error);
+        document.getElementById('result-container').classList.remove('d-none');
+        document.getElementById('result-container').classList.remove('bg-light', 'bg-success-subtle', 'border-success');
+        document.getElementById('result-container').classList.add('bg-danger-subtle', 'border-danger');
+        document.getElementById('result').textContent = `Erro: ${error.message}`;
+    }
+}

@@ -1,5 +1,6 @@
 @extends('layout.app')
 
+@section('content')
 <!-- Main Content -->
 <div class="main-content" id="mainContent">
     <div class="container-fluid">
@@ -60,7 +61,7 @@
         </div>
     </div>
 </div>
-
+@endsection
 {{--
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
