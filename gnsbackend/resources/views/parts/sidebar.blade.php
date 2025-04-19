@@ -97,7 +97,7 @@
                             <i class="bi bi-qr-code-scan"></i>
                             <span>Conectar ao WhatsApp</span>
                         </a>
-                        <a href="{{ route('adm.user') }}" class="menu-item ps-5">
+                        <a href="{{ route('adm.register.user') }}" class="menu-item ps-5">
                             <i class="bi bi-person-lock"></i>
                             <span>Administrativo</span>
                         </a>

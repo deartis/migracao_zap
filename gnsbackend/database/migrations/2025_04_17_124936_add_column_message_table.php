@@ -14,7 +14,7 @@ return new class extends Migration {
             /**
              * Criar colunas para os serviços
              */
-            $table->integer('number')
+            $table->string('number')
                 ->after('password');
 
             $table->integer('msgLimit')
@@ -27,11 +27,11 @@ return new class extends Migration {
                 ->after('sendedMsg')
                 ->default('nu');
 
-            $table->integer('enabled')
+            $table->boolean('enabled')
                 ->after('role')
                 ->default('0');
 
-            $table->integer('rightNumber')
+            $table->boolean('rightNumber')
                 ->after('enabled')
                 ->default('0');
 

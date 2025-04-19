@@ -10,11 +10,18 @@
                 </span>
                 <input type="text" class="form-control border-0 py-2" placeholder="Pesquisar usuário" aria-label="Pesquisar usuário">
             </div>
-            <a href="#" class="btn btn-primary btn-lg px-4 shadow rounded-pill d-flex align-items-center gap-2">
+            <a href="{{ route('adm.register.user') }}" class="btn btn-primary btn-lg px-4 shadow rounded-pill d-flex align-items-center gap-2">
                 <i class="bi bi-plus-circle fs-5"></i>
                 <span>Novo Usuário</span>
             </a>
         </div>
+
+        @session('success')
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endsession
 
         <!-- Users Table -->
         <div class="card shadow-sm border-0 rounded-4 overflow-hidden">

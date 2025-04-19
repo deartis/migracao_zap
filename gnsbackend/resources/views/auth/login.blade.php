@@ -4,6 +4,30 @@
     <div class="container">
         <div class="login-container">
             <h2>Login</h2>
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+            @auth
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    Você já está logado como {{ auth()->user()->name }}.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                @else
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        Você não está logado.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+            @endauth
+
             <form action="{{ route('login') }}" method="post">
                 @csrf
                 <!-- Campo de E-mail -->
