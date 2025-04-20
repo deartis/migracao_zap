@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
+
     Route::get('/', function () {
         return view('pages.home');
     })->name('home');
@@ -17,13 +18,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/whatsapp/health', function (WhatsAppService $service) {
         return $service->healthCheck()->json();
     });
-
-    /**
-     * ===========================================================
-     * | Rota para envio de mensagem única
-     * ============================================================
-     */
-    Route::post('/whatsapp-send', [WhatsAppController::class, 'sendMessage'])->name('whatsapp.send');
 
     /*Route::post('/whatsapp-send', function (SendMessageRequest $request, WhatsAppService $whatsapp){
         $message = $request->input('message');
@@ -64,13 +58,20 @@ Route::middleware(['auth'])->group(function () {
 
     /**
      * ==================================
-     * Rotas de página                  =
+     * Rotas de páginas                 =
      * ==================================
      */
+    //Rotas comuns
     Route::get('/page/single-contact', [SingleContactController::class, 'index'])->name('page.single.contact');
+    Route::post('/whatsapp-send', [WhatsAppController::class, 'sendMessage'])->name('whatsapp.send');
+
+    //Rotas de admins
     Route::get('/adm/page/user', [UserController::class, 'index'])->name('adm.user');
     Route::get('/adm/page/register-user', [UserController::class, 'registerUser'])->name('adm.register.user');
     Route::post('/adm/page/register-user', [UserController::class, 'store'])->name('add.user');
+
+    //Logout
+    Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 
     /**
      * Route::get('/start', [WhatsAppController::class, 'start']);

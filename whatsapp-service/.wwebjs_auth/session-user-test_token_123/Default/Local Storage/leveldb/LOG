@@ -1,2 +1,15 @@
-2025/04/18-09:13:53.640 23c82 Creating DB /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/Local Storage/leveldb since it was missing.
-2025/04/18-09:13:53.660 23c82 Reusing MANIFEST /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/Local Storage/leveldb/MANIFEST-000001
+2025/04/19-20:31:36.925 68a1d Reusing MANIFEST /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/Local Storage/leveldb/MANIFEST-000001
+2025/04/19-20:31:36.925 68a1d Recovering log #3
+2025/04/19-20:31:36.925 68a1d Reusing old log /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/Local Storage/leveldb/000003.log 
+2025/04/19-22:27:47.535 6e25f Level-0 table #5: started
+2025/04/19-22:27:47.558 6e25f Level-0 table #5: 18244 bytes OK
+2025/04/19-22:27:47.567 6e25f Delete type=0 #3
+2025/04/20-08:42:09.533 73fae Level-0 table #7: started
+2025/04/20-08:42:09.571 73fae Level-0 table #7: 12284 bytes OK
+2025/04/20-08:42:09.585 73fae Delete type=0 #4
+2025/04/20-13:32:25.599 76298 Level-0 table #9: started
+2025/04/20-13:32:25.606 76298 Level-0 table #9: 12817 bytes OK
+2025/04/20-13:32:25.614 76298 Delete type=0 #6
+2025/04/20-19:32:38.661 78d6f Level-0 table #11: started
+2025/04/20-19:32:38.668 78d6f Level-0 table #11: 12985 bytes OK
+2025/04/20-19:32:38.677 78d6f Delete type=0 #8

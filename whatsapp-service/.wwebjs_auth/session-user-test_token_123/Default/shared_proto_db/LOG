@@ -1,2 +1,3 @@
-2025/04/18-09:12:32.399 23c80 Creating DB /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/shared_proto_db since it was missing.
-2025/04/18-09:12:32.422 23c80 Reusing MANIFEST /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/shared_proto_db/MANIFEST-000001
+2025/04/19-20:37:24.782 68b09 Reusing MANIFEST /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/shared_proto_db/MANIFEST-000001
+2025/04/19-20:37:24.782 68b09 Recovering log #3
+2025/04/19-20:37:24.782 68b09 Reusing old log /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/shared_proto_db/000003.log 

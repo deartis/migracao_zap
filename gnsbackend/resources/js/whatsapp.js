@@ -1,18 +1,51 @@
 // Configuração inicial
 document.addEventListener('DOMContentLoaded', function () {
-    // Adicionar isto à sua requisição
-    const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('XSRF-TOKEN='))
-        ?.split('=')[1];
+    // Verificar se os elementos globais de status existem
+    const globalStatusIndicator = document.getElementById('global-status-indicator');
+    const globalStatusText = document.getElementById('global-status-text');
+    const whatsappGlobalStatus = document.querySelector('.whatsapp-global-status');
 
-    // Verifique se isso retorna um valor válido
-    checkStatus();
-    setInterval(checkStatus, 5000); // Verificar status a cada 5 segundos
+    /*if (whatsappGlobalStatus) {
+        whatsappGlobalStatus.addEventListener('click', function () {
+            // Redirecionar para a página do WhatsApp
+            window.location.href = '/'; // Ajuste para a rota correta
+        });
 
-    // Botões
-    document.getElementById('connect-btn').addEventListener('click', connectWhatsApp);
-    document.getElementById('send-btn').addEventListener('click', sendMessage);
+        // Adicionar cursor pointer para indicar que é clicável
+        //whatsappGlobalStatus.style.cursor = 'pointer';
+    }*/
+
+    if (globalStatusIndicator && globalStatusText) {
+        // Verificar status inicialmente
+        checkGlobalWhatsAppStatus();
+
+        // Verificar a cada 30 segundos (intervalo maior para páginas globais)
+        setInterval(checkGlobalWhatsAppStatus, 30000);
+    }
+
+    // Verifique se estamos na página do WhatsApp
+    if (document.getElementById('connection-status')) {
+        // Adicionar isto à sua requisição
+        const csrfToken = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('XSRF-TOKEN='))
+            ?.split('=')[1];
+
+        // Verifique se isso retorna um valor válido
+        checkStatus();
+        setInterval(checkStatus, 5000); // Verificar status a cada 5 segundos
+
+        // Botões
+        const connectBtn = document.getElementById('connect-btn');
+        if (connectBtn) {
+            connectBtn.addEventListener('click', connectWhatsApp);
+        }
+
+        const sendBtn = document.getElementById('send-btn');
+        if (sendBtn) {
+            sendBtn.addEventListener('click', sendMessage);
+        }
+    }
 });
 
 // Verificar status da conexão
@@ -23,6 +56,7 @@ async function checkStatus() {
 
         const statusElement = document.getElementById('connection-status');
         const phoneElement = document.getElementById('phone-number');
+        const statusIndicator = document.getElementById('status-indicator');
 
         // Atualizar status
         statusElement.textContent = data.status || 'Desconhecido';
@@ -45,6 +79,46 @@ async function checkStatus() {
         }
     } catch (error) {
         console.error('Erro ao verificar status:', error);
+    }
+}
+
+// Função para verificar o status global do WhatsApp
+async function checkGlobalWhatsAppStatus() {
+    try {
+        const response = await fetch('/whatsapp-status');
+        const data = await response.json();
+
+        // Obter elementos
+        const statusCircle = document.querySelector('.status-circle');
+        const statusText = document.getElementById('global-status-text');
+
+        // Atualizar o texto do status
+        statusText.textContent =
+            data.status === 'connected' ? 'On-line' :
+            data.status === 'connecting' ? 'Conectando...' :
+                'Desconectado';
+
+        // Atualizar a cor do círculo
+        if (data.status === 'connected') {
+            statusCircle.style.backgroundColor = '#198754'; // Verde
+        } else if (data.status === 'connecting') {
+            statusCircle.style.backgroundColor = '#ffc107'; // Amarelo
+        } else {
+            statusCircle.style.backgroundColor = '#dc3545'; // Vermelho
+        }
+
+    } catch (error) {
+        console.error('Erro ao verificar status global:', error);
+        // Em caso de erro, definir como desconectado
+        const statusCircle = document.querySelector('.status-circle');
+        if (statusCircle) {
+            statusCircle.style.backgroundColor = '#dc3545'; // Vermelho
+        }
+
+        const statusText = document.getElementById('global-status-text');
+        if (statusText) {
+            statusText.textContent = 'Desconectado';
+        }
     }
 }
 

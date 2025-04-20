@@ -1,3 +1,80 @@
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay"></div>
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="logo">
+        <i class="bi bi-check-circle-fill text-success"></i>
+        <span>GnsWhatSender</span>
+    </div>
+
+    {{--<div class="nav-heading">Dashboard</div>--}}
+    <ul class="nav flex-column">
+        <li class="nav-item" data-title="Início">
+            <a class="nav-link" href="{{ route('home') }}">
+                <i class="bi bi-house-door me-2"></i> <span>Início</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="nav-heading">Mensagens</div>
+    <ul class="nav flex-column">
+        <li class="nav-item" data-title="Envio em massa xls/csv">
+            <a class="nav-link" href="#">
+                <i class="bi bi-whatsapp me-2 text-success"></i> <span>Envio em massa xls/csv</span>
+            </a>
+        </li>
+        <li class="nav-item" data-title="Envio em massa contatos telefone">
+            <a class="nav-link" href="#">
+                <i class="bi bi-whatsapp me-2 text-success"></i> <span>Envio em massa contatos telefone</span>
+            </a>
+        </li>
+        <li class="nav-item" data-title="Envio único número">
+            <a class="nav-link" href="{{ route('page.single.contact') }}">
+                <i class="bi bi-whatsapp me-2 text-success"></i> <span>Envio único número</span>
+            </a>
+        </li>
+        <li class="nav-item" data-title="Responder mensagens">
+            <a class="nav-link" href="#">
+                <i class="bi bi-chat-left-text me-2 text-primary"></i> <span>Responder mensagens</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="nav-heading">Histórico de envios</div>
+    <ul class="nav flex-column">
+        <li class="nav-item" data-title="Registros de envios">
+            <a class="nav-link" href="#">
+                <i class="bi bi-journal-text me-2"></i> <span>Registros de envios</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="nav-heading">Configurações</div>
+    <ul class="nav flex-column">
+        <li class="nav-item" data-title="Dados do Perfil">
+            <a class="nav-link" href="#">
+                <i class="bi bi-gear me-2"></i> <span>Dados do Perfil</span>
+            </a>
+        </li>
+        <li class="nav-item" data-title="Área Administrativa">
+            <a class="nav-link" href="#">
+                <i class="bi bi-person-badge me-2"></i> <span>Área Administrativa</span>
+            </a>
+        </li>
+        <li class="nav-item" data-title="Conectar Whatsapp">
+            <a class="nav-link" href="#">
+                <i class="bi bi-whatsapp me-2"></i> <span>Conectar Whatsapp</span>
+            </a>
+        </li>
+        <li class="nav-item" data-title="Sair">
+            <a class="nav-link" href="#">
+                <i class="bi bi-box-arrow-left me-2"></i> <span>Sair</span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+{{--
 <!-- Mobile menu toggle -->
 <div class="menu-toggle" id="menuToggle">
     <i class="bi bi-list"></i>
@@ -25,7 +102,7 @@
     </div>
 
     <div class="mt-3">
-        <a href="#" class="menu-item active">
+        <a href="{{ route('home') }}" class="menu-item active">
             <i class="bi bi-house-door"></i>
             <span>Início</span>
         </a>
@@ -101,7 +178,7 @@
                             <i class="bi bi-person-lock"></i>
                             <span>Administrativo</span>
                         </a>
-                        <a href="#" class="menu-item ps-5">
+                        <a href="{{ route('logout') }}" class="menu-item ps-5">
                             <i class="bi bi-box-arrow-right"></i>
                             <span>Deslogar</span>
                         </a>
@@ -111,3 +188,4 @@
         </div>
     </div>
 </div>
+--}}
