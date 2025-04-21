@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\InportListController;
 use App\Http\Controllers\SingleContactController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
@@ -65,13 +66,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/page/single-contact', [SingleContactController::class, 'index'])->name('page.single.contact');
     Route::post('/whatsapp-send', [WhatsAppController::class, 'sendMessage'])->name('whatsapp.send');
 
+    Route::get('/page/from-sheet',[InportListController::class, 'index'])->name('page.from.sheet');
+    Route::post('/page/from-sheet',[InportListController::class, 'uploadSheet'])->name('upload.sheet');
+
+
     //Rotas de admins
     Route::get('/adm/page/user', [UserController::class, 'index'])->name('adm.user');
     Route::get('/adm/page/register-user', [UserController::class, 'registerUser'])->name('adm.register.user');
     Route::post('/adm/page/register-user', [UserController::class, 'store'])->name('add.user');
-
-    //Logout
-    Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 
     /**
      * Route::get('/start', [WhatsAppController::class, 'start']);

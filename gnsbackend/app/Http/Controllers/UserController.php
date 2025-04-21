@@ -72,8 +72,4 @@ class UserController
         return redirect()->route('adm.user')->with('success', 'Usuário criado com sucesso!');
     }
 
-    public function logout(Request $request){
-        Auth::logout();
-        return redirect('/login')->with(['info' => 'Você saiu do sistema!']);
-    }
 }

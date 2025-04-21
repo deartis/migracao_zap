@@ -19,7 +19,7 @@
     <div class="nav-heading">Mensagens</div>
     <ul class="nav flex-column">
         <li class="nav-item" data-title="Envio em massa xls/csv">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{ route('page.from.sheet') }}">
                 <i class="bi bi-whatsapp me-2 text-success"></i> <span>Envio em massa xls/csv</span>
             </a>
         </li>
@@ -67,9 +67,14 @@
             </a>
         </li>
         <li class="nav-item" data-title="Sair">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{ route('logout') }}"
+            onclick="event.preventDefault();
+            document.getElementById('logout_form').submit()">
                 <i class="bi bi-box-arrow-left me-2"></i> <span>Sair</span>
             </a>
+            <form id="logout_form" action="{{ route('logout') }}" method="POST" style="display: none">
+                @csrf
+            </form>
         </li>
     </ul>
 </div>
