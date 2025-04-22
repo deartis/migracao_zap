@@ -14,3 +14,12 @@ if(!function_exists('rm_acentos')){
         return $string;
     }
 }
+
+if(!function_exists('uniqName')){
+    function uniqName($name){
+        $primeiroNome = explode(' ', auth()->user()->name)[0];
+        $nomeFormatado = ucfirst(strtolower($primeiroNome));
+
+        return $nomeFormatado;
+    }
+}

@@ -24,7 +24,7 @@
             </a>
         </li>
         <li class="nav-item" data-title="Envio em massa contatos telefone">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{ route('page.multi.msg') }}">
                 <i class="bi bi-whatsapp me-2 text-success"></i> <span>Envio em massa contatos telefone</span>
             </a>
         </li>
@@ -34,7 +34,7 @@
             </a>
         </li>
         <li class="nav-item" data-title="Responder mensagens">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{ route('page.respond.msg') }}">
                 <i class="bi bi-chat-left-text me-2 text-primary"></i> <span>Responder mensagens</span>
             </a>
         </li>

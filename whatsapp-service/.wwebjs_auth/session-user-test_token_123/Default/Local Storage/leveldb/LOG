@@ -1,3 +1,18 @@
 2025/04/21-20:53:56.827 32a2 Reusing MANIFEST /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/Local Storage/leveldb/MANIFEST-000001
 2025/04/21-20:53:56.834 32a2 Recovering log #19
 2025/04/21-20:53:56.847 32a2 Reusing old log /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/Local Storage/leveldb/000019.log 
+2025/04/21-22:33:55.335 43fb Level-0 table #23: started
+2025/04/21-22:33:55.421 43fb Level-0 table #23: 13409 bytes OK
+2025/04/21-22:33:55.429 43fb Delete type=0 #19
+2025/04/22-11:04:59.099 cd8a Level-0 table #25: started
+2025/04/22-11:04:59.119 cd8a Level-0 table #25: 12696 bytes OK
+2025/04/22-11:04:59.128 cd8a Delete type=0 #22
+2025/04/22-11:04:59.129 cd8a Compacting 4@0 + 1@1 files
+2025/04/22-11:04:59.138 cd8a Generated table #26@0: 20 keys, 3662 bytes
+2025/04/22-11:04:59.138 cd8a Compacted 4@0 + 1@1 files => 3662 bytes
+2025/04/22-11:04:59.146 cd8a compacted to: files[ 0 1 1 0 0 0 0 ]
+2025/04/22-11:04:59.146 cd8a Delete type=2 #16
+2025/04/22-11:04:59.146 cd8a Delete type=2 #20
+2025/04/22-11:04:59.146 cd8a Delete type=2 #23
+2025/04/22-11:04:59.146 cd8a Delete type=2 #25
+2025/04/22-11:04:59.146 cd8a Delete type=2 #18

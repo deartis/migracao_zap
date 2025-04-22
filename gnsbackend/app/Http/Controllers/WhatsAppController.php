@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SendMessageRequest;
 use App\Imports\ContatosImport;
 use App\Jobs\ProcessarEnvioWhatsapp;
+use App\Jobs\SendWhatsAppMessageJob;
+use App\Models\Historic;
 use App\Services\WhatsAppService;
 use Exception;
 use Illuminate\Http\Request;
@@ -67,7 +69,30 @@ class WhatsAppController extends Controller
     {
         try {
             $validated = $request->validated();
+            $user = auth()->user(); // Usuário logado
 
+            $now = now();
+            $currentMonth = $now->format('Y-m');
+
+            // Verifica se é um novo mês
+            if ($user->lastMessage) {
+                $lastMsgMonth = Carbon::parse($user->lastMessage)->format('Y-m');
+
+                if ($lastMsgMonth !== $currentMonth) {
+                    $mensagensSobraram = max($user->msgLimit - $user->sendedMsg, 0);
+
+                    // Atualiza limite e reseta enviados
+                    $user->msgLimit += $mensagensSobraram;
+                    $user->sendedMsg = 0;
+                }
+            }
+
+            // Verifica limite de envio
+            if ($user->sendedMsg >= $user->msgLimit) {
+                return response()->json(['error' => 'Limite de mensagens atingido para este mês.'], 403);
+            }
+
+            // Envia mensagem
             $response = $this->whatsappService->sendMessage(
                 $validated['number'],
                 $validated['message'],
@@ -75,11 +100,19 @@ class WhatsAppController extends Controller
                 $this->getUserToken($request)
             );
 
+            // Se sucesso, atualiza contadores e salva
+            if ($response->successful()) {
+                $user->increment('sendedMsg'); // Incrementa diretamente no banco
+                $user->lastMessage = $now;
+                $user->save();
+            }
+
             return response()->json($response->json(), $response->status());
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
 
     /**
      * -----------------------------------------------
@@ -143,4 +176,44 @@ class WhatsAppController extends Controller
         ]);
     }
 
+    //==================================//
+    // ==== Enviar mensagem em massa ===//
+    //==================================//
+    public function sendBulkMessages(Request $request)
+    {
+        $message = $request->input('message');
+        $token = $this->getUserToken($request);
+
+        $contacts = Historic::whereNotNull('contact')->get();
+
+        foreach ($contacts as $index => $contact) {
+            SendWhatsAppMessageJob::dispatch($contact->contact, $message, $token)
+                ->delay(now()->addSeconds($index * rand(4,10))); // aleatório entre 4 e 10 segundos
+        }
+
+        return response()->json(['status' => 'Mensagens em processo de envio']);
+    }
+
+
+    public function dashboard()
+    {
+        $totalContatos = Historic::count();
+        $enviadas = Historic::where('status', 'sucesso')->count();
+        $comErro = Historic::where('status', 'erro')->count();
+
+        $historico = Historic::latest()->take(20)->get();
+
+        return view('pages.dashboard', compact('totalContatos', 'enviadas', 'comErro', 'historico'));
+    }
+
+    public function responder(Request $request)
+    {
+        $numero = $request->input('numero');
+        $mensagem = $request->input('mensagem');
+
+        // Aqui você chama seu client do whatsapp_web.js, via eventos, jobs ou API
+
+        // Exemplo de retorno simples:
+        return redirect()->back()->with('success', 'Mensagem enviada com sucesso!');
+    }
 }

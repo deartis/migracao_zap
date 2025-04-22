@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Imports\ContatosImport;
+use App\Models\Historic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
@@ -12,7 +13,11 @@ class InportListController extends Controller
 {
     public function index()
     {
-        return view('pages.from-sheet');
+        $contatos = Historic::where('user_id', auth()->id())
+        ->latest()
+        ->get();
+
+        return view('pages.from-sheet', compact('contatos'));
     }
 
     public function uploadSheet(Request $request)
@@ -25,7 +30,9 @@ class InportListController extends Controller
         $extension = strtolower($file->getClientOriginalExtension());
 
         // Renomeia apenas para uso interno (não salva no disco)
-        $renomeado = $file->move(sys_get_temp_dir(), Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . $extension);
+        $renomeado = $file->move(sys_get_temp_dir(),
+            Str::slug(pathinfo($file->getClientOriginalName(),
+                PATHINFO_FILENAME)) . '__' . auth()->id() . '__' . time() . '.' . $extension);
 
         //dd($renomeado->getRealPath());
         $importador = new ContatosImport();
