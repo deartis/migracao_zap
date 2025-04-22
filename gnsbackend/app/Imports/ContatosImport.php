@@ -16,32 +16,35 @@ class ContatosImport implements ToCollection
         //Pega o cabeçalho (primeira linha)
         $header = $rows->first();
         $nomeIndex = null;
-        $nome = null; //Variável da coluna obrigatória
 
+        $nome = null; //Variável da coluna obrigatória
         //Localiza a coluna "titulo" (exatamente assim)
         foreach ($header as $index => $coluna) {
             $nome = strtolower(trim(rm_acentos($coluna)));
             if ($nome === 'nome' || $nome === 'name' || $nome === 'nomes' || $nome === 'names') {
                 $nomeIndex = $index;
+
                 break;
             }
         }
 
         if (is_null($nomeIndex)) {
             return back()->with('error', 'A planilha deve conter a coluna "Nome" ou "Nomes".');
+        }else{
+            Historic::where('user_id', auth()->id())->delete();
         }
 
         // Altera a partir da segunda linha
         foreach ($rows->skip(1) as $row) {
             $nome = $row[$nomeIndex] ?? null;
 
-            if(!$nome) continue;
+            if (!$nome) continue;
 
             $numero = null;
 
             // Procura pela primeira linha que contém o número de telefone
-            foreach ( $row as $index=>$value) {
-                if($index == $nomeIndex) continue; // Pula a coluna do título
+            foreach ($row as $index => $value) {
+                if ($index == $nomeIndex) continue; // Pula a coluna do título
 
                 $numeroLimpo = preg_replace('/\D+/', '', $value); // remove tudo que não é número
 
@@ -51,7 +54,7 @@ class ContatosImport implements ToCollection
                 }
             }
 
-            if($numero){
+            if ($numero) {
                 Historic::create([
                     'user_id' => auth()->id(),
                     'name' => $nome,

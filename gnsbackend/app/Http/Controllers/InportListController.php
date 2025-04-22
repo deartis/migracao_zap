@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Imports\ContatosImport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Excel as ExcelFormat;
 
 class InportListController extends Controller
 {
@@ -13,37 +15,54 @@ class InportListController extends Controller
         return view('pages.from-sheet');
     }
 
-    public function uploadSheet(Request $request){
-
+    public function uploadSheet(Request $request)
+    {
         $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt,xlsx,xls,xml|max:2048',
+            'csv_file' => 'required|file|mimes:csv,xlsx,xls,xml,ods|max:2048',
         ]);
 
+        $file = $request->file('csv_file');
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        // Renomeia apenas para uso interno (não salva no disco)
+        $renomeado = $file->move(sys_get_temp_dir(), Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '-' . time() . '.' . $extension);
+
+        //dd($renomeado->getRealPath());
         $importador = new ContatosImport();
-        Excel::import($importador, $request->file('csv_file'));
 
-        $dados = $importador->dados;
+        if ($extension === 'csv') {
+            Excel::import($importador, $renomeado->getRealPath(), ExcelFormat::CSV);
+        } else {
+            Excel::import($importador, $renomeado->getRealPath());
+        }
 
-        return view('pages.from-sheet',[
-            'dados' => $dados,
-            'success' => 'Arquivo importado com sucesso!',
+        return redirect()->route('page.from.sheet')->with('success', 'Lista salva com sucesso!');
+    }
+
+    /*public function uploadSheet(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,xlsx,xls,xml,ods|max:2048',
         ]);
-
-
-        /*$request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt,xlsx,xls|max:2048',
-        ]);
-
-        //dd($request);
 
         $file = $request->file('csv_file');
 
-        // Pode salvar no estorage
-        $path = $file->storeAs('csv', uniqid(). '_'. $file->getClientOriginalName(), 'public');
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $extension = strtolower($file->getClientOriginalExtension());
+        $filename = Str::slug($originalName) . '_' .time() . '.' . $extension;
 
-        dd($path);
+        $path = $file->storeAs('uploads', $filename);
 
-        // Aqui lê e trata o arquivo
-        return redirect()->route('page.from.sheet')->with('success', 'Arquivo salvo com sucesso!');*/
-    }
+        $importador = new ContatosImport();
+
+        if ($extension === 'csv') {
+            Excel::import($importador, storage_path('app/' . $path), ExcelFormat::CSV);
+        } else {
+            Excel::import($importador, storage_path('app/' . $path));
+        }
+
+        $dados = $importador->dados;
+
+        return redirect()->route('page.from.sheet', [$dados])->with('success', 'Lista salva com sucesso!');
+    }*/
 }

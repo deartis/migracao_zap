@@ -4,9 +4,7 @@ use App\Http\Controllers\InportListController;
 use App\Http\Controllers\SingleContactController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
-use App\Http\Requests\SendMessageRequest;
 use App\Services\WhatsAppService;
-use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
