@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container mt-5">
-        <h2 class="mb-4 text-center fw-bold">📊 Dashboard de Envio de Mensagens</h2>
+        <h2 class="mb-4 text-center fw-bold">📊 Registro de Envio de Mensagens</h2>
 
         <div class="row g-4 mb-4">
             <div class="col-md-4">
@@ -52,7 +52,7 @@
                             <td>{{ $item->name }}</td>
                             <td>{{ $item->contact }}</td>
                             <td>
-                                @if($item->status === 'sucesso')
+                                @if($item->status === 'enviado')
                                     <span class="badge bg-success">Enviado</span>
                                 @else
                                     <span class="badge bg-danger">Erro</span>

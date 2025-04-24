@@ -6,6 +6,8 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 const { pipeline } = require("stream/promises");
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" }); // Cria uploads/ temporário
 
 const app = express();
 app.use(express.json());
@@ -214,7 +216,67 @@ app.get("/delete-session", extractToken, async (req, res) => {
 });
 
 // Rota para enviar mensagens
-app.post("/send-message", extractToken, async (req, res) => {
+
+app.post("/send-message", extractToken, upload.single("media"), async (req, res) => {
+  try {
+    const token = req.token;
+    const { number, message } = req.body;
+    const file = req.file;
+    const clientData = clients.get(token);
+
+    console.log(file);
+
+    if (!clientData || clientData.status !== "connected") {
+      return res.status(400).json({ error: "WhatsApp não conectado" });
+    }
+
+    let formattedNumber = number.replace(/\D/g, "");
+    if (!formattedNumber.startsWith("55")) {
+      formattedNumber = "55" + formattedNumber;
+    }
+
+    const chatId = `${formattedNumber}@c.us`;
+
+    if (file) {
+      //const mediaPath = file.path;
+      //const mediaMessage = MessageMedia.fromFilePath(mediaPath);
+
+      const ext = path.extname(file.originalname);
+      const newPath = `${file.path}${ext}`
+
+      fs.renameSync(file.path, newPath);
+
+      const mediaMessage = MessageMedia.fromFilePath(newPath);
+
+      const sent = await clientData.client.sendMessage(chatId, mediaMessage, {
+        caption: message,
+      });
+
+      fs.unlinkSync(newPath); // Limpa o arquivo temporário
+
+      return res.json({
+        success: true,
+        messageId: sent.id._serialized,
+        timestamp: Date.now(),
+      });
+
+
+    } else {
+      const sent = await clientData.client.sendMessage(chatId, message);
+      return res.json({
+        success: true,
+        messageId: sent.id._serialized,
+        timestamp: Date.now(),
+      });
+    }
+  } catch (e) {
+    console.error("Erro ao enviar mensagem:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+/*
+app.post("/send-message", extractToken,upload.single("media"), async (req, res) => {
   try {
     const token = req.token;
     const { number, message, media } = req.body;
@@ -280,6 +342,7 @@ app.post("/send-message", extractToken, async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+*/
 
 // Saúde do servidor
 app.get("/health", (req, res) => {

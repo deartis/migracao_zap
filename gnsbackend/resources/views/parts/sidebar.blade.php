@@ -11,7 +11,7 @@
     <ul class="nav flex-column">
         <li class="nav-item" data-title="Início">
             <a class="nav-link" href="{{ route('home') }}">
-                <i class="bi bi-house-door me-2"></i> <span>Início</span>
+                <i class="bi bi-house-door me-2 text-primary"></i> <span>Início</span>
             </a>
         </li>
     </ul>
@@ -20,31 +20,31 @@
     <ul class="nav flex-column">
         <li class="nav-item" data-title="Envio em massa xls/csv">
             <a class="nav-link" href="{{ route('page.from.sheet') }}">
-                <i class="bi bi-whatsapp me-2 text-success"></i> <span>Envio em massa xls/csv</span>
+                <i class="bi bi-person-lines-fill me-2 text-success"></i> <span>Importar contatos</span>
             </a>
         </li>
         <li class="nav-item" data-title="Envio em massa contatos telefone">
             <a class="nav-link" href="{{ route('page.multi.msg') }}">
-                <i class="bi bi-whatsapp me-2 text-success"></i> <span>Envio em massa contatos telefone</span>
+                <i class="bi bi-list-check me-2 text-success"></i> <span>Envio em massa contatos telefone</span>
             </a>
         </li>
         <li class="nav-item" data-title="Envio único número">
             <a class="nav-link" href="{{ route('page.single.contact') }}">
-                <i class="bi bi-whatsapp me-2 text-success"></i> <span>Envio único número</span>
+                <i class="bi bi-send me-2 text-success"></i> <span>Envio único número</span>
             </a>
         </li>
         <li class="nav-item" data-title="Responder mensagens">
             <a class="nav-link" href="{{ route('page.respond.msg') }}">
-                <i class="bi bi-chat-left-text me-2 text-primary"></i> <span>Responder mensagens</span>
+                <i class="bi bi-chat-left-text me-2 text-success"></i> <span>Responder mensagens</span>
             </a>
         </li>
     </ul>
 
-    <div class="nav-heading">Histórico de envios</div>
+    <div class="nav-heading">Histórico</div>
     <ul class="nav flex-column">
         <li class="nav-item" data-title="Registros de envios">
-            <a class="nav-link" href="#">
-                <i class="bi bi-journal-text me-2"></i> <span>Registros de envios</span>
+            <a class="nav-link" href="{{ route('page.historic') }}">
+                <i class="bi bi-journal-text me-2 text-success"></i> <span>Registros de envios</span>
             </a>
         </li>
     </ul>
@@ -52,25 +52,25 @@
     <div class="nav-heading">Configurações</div>
     <ul class="nav flex-column">
         <li class="nav-item" data-title="Dados do Perfil">
-            <a class="nav-link" href="#">
-                <i class="bi bi-gear me-2"></i> <span>Dados do Perfil</span>
+            <a class="nav-link" href="{{ route('page.profile') }}">
+                <i class="bi bi-gear me-2 text-success"></i> <span>Dados do Perfil</span>
             </a>
         </li>
         <li class="nav-item" data-title="Área Administrativa">
             <a class="nav-link" href="#">
-                <i class="bi bi-person-badge me-2"></i> <span>Área Administrativa</span>
+                <i class="bi bi-person-badge me-2 text-success"></i> <span>Área Administrativa</span>
             </a>
         </li>
         <li class="nav-item" data-title="Conectar Whatsapp">
             <a class="nav-link" href="#">
-                <i class="bi bi-whatsapp me-2"></i> <span>Conectar Whatsapp</span>
+                <i class="bi bi-whatsapp me-2 text-success"></i> <span>Conectar Whatsapp</span>
             </a>
         </li>
         <li class="nav-item" data-title="Sair">
             <a class="nav-link" href="{{ route('logout') }}"
             onclick="event.preventDefault();
             document.getElementById('logout_form').submit()">
-                <i class="bi bi-box-arrow-left me-2"></i> <span>Sair</span>
+                <i class="bi bi-box-arrow-left me-2 text-danger"></i> <span>Sair</span>
             </a>
             <form id="logout_form" action="{{ route('logout') }}" method="POST" style="display: none">
                 @csrf

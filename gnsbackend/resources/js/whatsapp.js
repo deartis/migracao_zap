@@ -165,7 +165,8 @@ async function sendMessage() {
         // Obter dados do formulário
         const number = document.getElementById('number-input').value.trim();
         const message = document.getElementById('message-input').value.trim();
-        const media = document.getElementById('media-input').value.trim() || null;
+        const mediaInput = document.getElementById('media-input');
+        const fileInput = document.getElementById('file-input');
 
         // Validação simples
         if (!number || !message) {
@@ -198,26 +199,31 @@ async function sendMessage() {
             }
         }
 
-        // Incluir token no corpo também, além do header
-        const requestData = {
-            _token: token,
-            number,
-            message,
-            media
-        };
+        // Usar FormData para envio de arquivos
+        const formData = new FormData();
+        formData.append('_token', token);
+        formData.append('number', number);
+        formData.append('message', message);
+        formData.append('media', fileInput.files[0]);
+
+        // Adicionar arquivo se existir
+        if (mediaInput.files && mediaInput.files[0]) {
+            formData.append('media', mediaInput.files[0]);
+            console.log("Arquivo adicionado:", mediaInput.files[0].name);
+        }
 
         console.log("Enviando requisição para:", '/whatsapp-send');
-        console.log("Dados:", requestData);
 
+        console.log([...formData.entries()]); // pra ver se a mídia está sendo anexada
         const response = await fetch('/whatsapp-send', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                // Não incluir Content-Type ao usar FormData
+                // O navegador define automaticamente com o boundary correto
                 'X-CSRF-TOKEN': token,
-                // Adicionando este cabeçalho específico do Laravel
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify(requestData)
+            body: formData // Usar FormData ao invés de JSON.stringify
         });
 
         // Verificar se a resposta é válida antes de tentar processar como JSON

@@ -24,7 +24,7 @@ class SendMessageRequest extends FormRequest
         return [
             'number' => 'required|string',
             'message' => 'required|string',
-            'media' => 'nullable|string'
+            'media' => 'nullable|file|mimes:jpeg,png,jpg,mp4,pdf,doc,docx|max:20480',
         ];
     }
 }

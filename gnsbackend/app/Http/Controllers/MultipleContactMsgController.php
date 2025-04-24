@@ -6,7 +6,7 @@ class MultipleContactMsgController extends Controller
 {
     public function index()
     {
-        return view('pages.historic');
+        return view('pages.from-contacts');
     }
 
 

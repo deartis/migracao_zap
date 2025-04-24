@@ -2,7 +2,9 @@
 @section('content')
     <div class="">
         <div class="p-4">
-            <h1 class="text-center mb-4">Teste de Integração WhatsApp</h1>
+            <h1 class="text-center mb-4">
+                <i class="fab fa-whatsapp text-success me-2"></i>Teste de Integração WhatsApp
+            </h1>
 
             <div class="mb-5">
                 <h2 class="h4 mb-3">Status da Conexão</h2>
@@ -12,7 +14,7 @@
                     <span id="phone-number" class="fst-italic"></span>
                 </div>
                 <button id="connect-btn" class="btn btn-primary">
-                    Conectar WhatsApp
+                    <i class="fas fa-plug me-2"></i>Conectar WhatsApp
                 </button>
             </div>
 
@@ -37,12 +39,21 @@
                         <label for="message-input" class="form-label">Mensagem</label>
                         <textarea id="message-input" class="form-control" rows="4" placeholder="Digite sua mensagem..."></textarea>
                     </div>
+
+                    <!-- Novo campo para upload de arquivos -->
                     <div class="mb-3">
+                        <label for="file-input" class="form-label">Arquivo (opcional)</label>
+                        <input type="file" id="file-input" class="form-control">
+                        <div class="form-text">Formatos suportados: PDF, imagens, áudio, vídeo (máx. 5MB)</div>
+                    </div>
+
+                    {{--<div class="mb-3">
                         <label for="media-input" class="form-label">URL da Mídia (opcional)</label>
                         <input type="text" id="media-input" class="form-control" placeholder="https://exemplo.com/imagem.jpg">
-                    </div>
+                    </div>--}}
+
                     <button id="send-btn" class="btn btn-success w-100">
-                        Enviar Mensagem
+                        <i class="fas fa-paper-plane me-2"></i>Enviar Mensagem
                     </button>
                 </div>
             </div>
@@ -53,4 +64,6 @@
             </div>
         </div>
     </div>
+
+
 @endsection

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SendMessageRequest;
@@ -10,6 +11,7 @@ use App\Services\WhatsAppService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 
 class WhatsAppController extends Controller
@@ -69,6 +71,84 @@ class WhatsAppController extends Controller
     {
         try {
             $validated = $request->validated();
+            $user = auth()->user();
+
+            $now = now();
+            $currentMonth = $now->format('Y-m');
+
+            // Verifica se é um novo mês
+            if ($user->lastMessage) {
+                $lastMsgMonth = Carbon::parse($user->lastMessage)->format('Y-m');
+
+                if ($lastMsgMonth !== $currentMonth) {
+                    $mensagensSobraram = max($user->msgLimit - $user->sendedMsg, 0);
+                    $user->msgLimit += $mensagensSobraram;
+                    $user->sendedMsg = 0;
+                }
+            }
+
+            // Verifica limite de envio
+            if ($user->sendedMsg >= $user->msgLimit) {
+                return response()->json(['error' => 'Limite de mensagens atingido para este mês.'], 403);
+            }
+
+            // Processa arquivo de mídia se existir
+            $mediaPath = null;
+            $mediaFile = null;
+
+
+            \Log::info('Conteúdo do request:', $request->all());
+            if ($request->hasFile('media')) {
+                \Log::info('Arquivo media:', [
+                    'nome' => $request->file('media')->getClientOriginalName(),
+                    'mime' => $request->file('media')->getMimeType(),
+                    'tamanho' => $request->file('media')->getSize(),
+                ]);
+            } else {
+                \Log::warning('Nenhum arquivo de mídia detectado no request.');
+            }
+
+            if ($request->hasFile('media')) {
+                $file = $request->file('media');
+
+                // Verifica se o arquivo é válido
+                if ($file->isValid()) {
+                    // Obtém o caminho temporário do arquivo
+                    $mediaPath = $file->getPathname();
+
+                    // Se precisar do arquivo como objeto, não apenas o caminho
+                    $mediaFile = [
+                        'path' => $mediaPath,
+                        'mimetype' => $file->getMimeType(),
+                        'filename' => $file->getClientOriginalName()
+                    ];
+                }
+            }
+
+            // Envia mensagem
+            $response = $this->whatsappService->sendMessage(
+                $validated['number'],
+                $validated['message'],
+                $mediaFile, //?? $validated['media'] ?? null, // Prioriza o arquivo enviado
+                $this->getUserToken($request)
+            );
+
+            // Se sucesso, atualiza contadores e salva
+            if ($response->successful()) {
+                $user->increment('sendedMsg');
+                $user->lastMessage = $now;
+                $user->save();
+            }
+
+            return response()->json($response->json(), $response->status());
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    /*public function sendMessage(SendMessageRequest $request)
+    {
+        try {
+            $validated = $request->validated();
             $user = auth()->user(); // Usuário logado
 
             $now = now();
@@ -111,7 +191,7 @@ class WhatsAppController extends Controller
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
-    }
+    }*/
 
 
     /**
@@ -166,7 +246,7 @@ class WhatsAppController extends Controller
         $contatos = Excel::toArray(new ContatosImport, $request->file('arquivo'))[0];
         $mensagem = $request->input('mensagem');
 
-        foreach ($contatos as $contato){
+        foreach ($contatos as $contato) {
             ProcessarEnvioWhatsapp::dispatch($contato, $mensagem);
         }
 
@@ -183,12 +263,13 @@ class WhatsAppController extends Controller
     {
         $message = $request->input('message');
         $token = $this->getUserToken($request);
+        $mediaFile = $request->file();
 
         $contacts = Historic::whereNotNull('contact')->get();
 
         foreach ($contacts as $index => $contact) {
-            SendWhatsAppMessageJob::dispatch($contact->contact, $message, $token)
-                ->delay(now()->addSeconds($index * rand(4,10))); // aleatório entre 4 e 10 segundos
+            SendWhatsAppMessageJob::dispatch($contact->contact, $message, $token, $mediaFile)
+                ->delay(now()->addSeconds($index * rand(4, 10))); // aleatório entre 4 e 10 segundos
         }
 
         return response()->json(['status' => 'Mensagens em processo de envio']);
