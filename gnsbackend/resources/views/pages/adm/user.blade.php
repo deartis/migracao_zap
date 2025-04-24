@@ -1,6 +1,89 @@
 @extends('layout.app')
 
 @section('content')
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Lista de Usuários</h1>
+            <a href="{{ route('adm.register.user') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Adicionar Usuário
+            </a>
+        </div>
+
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered">
+                <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Número</th>
+                    <th>Limite de Msgs</th>
+                    <th>Msgs Enviadas</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach ($users as $user)
+                    <tr>
+                        <td>{{ $user->id }}</td>
+                        <td>{{ $user->name }}</td>
+                        <td>{{ $user->email }}</td>
+                        <td>{{ $user->number }}</td>
+                        <td>{{ $user->msgLimit }}</td>
+                        <td>{{ $user->sendedMsg }}</td>
+                        <td>
+                        <span class="badge bg-{{ $user->role === 'admin' ? 'danger' : 'primary' }}">
+                            {{ $user->role === 'nu'?'Normal':'Admin' }}
+                        </span>
+                        </td>
+                        <td>
+                            @if ($user->enabled)
+                                <span class="badge bg-success">Ativo</span>
+                            @else
+                                <span class="badge bg-secondary">Inativo</span>
+                            @endif
+                        </td>
+                        <td class="text-nowrap">
+                            <!-- Botão Visualizar -->
+                            <a href="{{ route('users.show', $user->id) }}" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye-fill"></i>
+                            </a>
+                            <!-- Botão Editar -->
+                            <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil-fill"></i>
+                            </a>
+                            <!-- Botão Excluir -->
+                            <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza?')">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginação (se usar paginate() no controller) -->
+        {{ $users->links() }}
+    </div>
+@endsection
+
+{{--
+@extends('layout.app')
+
+@section('content')
     <div class="container py-5">
         <!-- Search Bar and New User Button -->
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -77,3 +160,4 @@
         </div>
     </div>
 @endsection
+--}}

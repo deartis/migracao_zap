@@ -12,23 +12,16 @@
                                 <img src="{{ $user->avatar }}" alt="Foto de perfil" class="rounded-circle img-fluid" style="width: 120px;">
                             @else
                                 <div class="bg-light rounded-circle d-flex justify-content-center align-items-center mx-auto" style="width: 120px; height: 120px;">
-                                    <i class="fa-solid fa-user fa-2x text-secondary"></i>
+                                    <i class="bi bi-person text-secondary" style="font-size: 50pt"></i>
                                 </div>
                             @endif
                         </div>
                         <h5 class="mb-1">{{ $user->name }}</h5>
-                        <p class="text-muted mb-3">{{ $user->role }}</p>
+                       {{-- <p class="text-muted mb-3">{{ $user->role }}</p>--}}
 
-                        <div class="d-flex justify-content-center mb-2">
-                            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editProfileModal">
-                                <i class="fa-solid fa-pen-to-square me-1"></i> Editar Perfil
-                            </button>
-                            @if(Auth::user()->role === 'admin')
-                                <a href="{{ route('page.profile') }}" class="btn btn-outline-secondary">
-                                    <i class="fa-solid fa-gauge-high me-1"></i> Dashboard
-                                </a>
-                            @endif
-                        </div>
+                        {{--<div class="d-flex justify-content-center mb-2">
+
+                        </div>--}}
                     </div>
                 </div>
 
@@ -95,16 +88,16 @@
                                 <p class="text-muted mb-0">{{ $user->number ?? 'Não definido' }}</p>
                             </div>
                         </div>
-                        <hr>
-                        <div class="row mb-3">
+
+                        {{--<hr><div class="row mb-3">
                             <div class="col-sm-3">
                                 <h6 class="mb-0">Número verificado</h6>
                             </div>
                             <div class="col-sm-9">
                                 <p class="text-muted mb-0">{{ $user->rightNumber ? 'Sim' : 'Não' }}</p>
                             </div>
-                        </div>
-                        <hr>
+                        </div>--}}
+                       {{-- <hr>
                         <div class="row mb-3">
                             <div class="col-sm-3">
                                 <h6 class="mb-0">Última mensagem</h6>
@@ -118,7 +111,7 @@
                                     @endif
                                 </p>
                             </div>
-                        </div>
+                        </div>--}}
                         <hr>
                         <div class="row mb-3">
                             <div class="col-sm-3">
@@ -146,13 +139,22 @@
                                 <i class="fa-solid fa-key me-1"></i> Alterar Senha
                             </button>
 
-                            @if(!$user->rightNumber)
+                            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                <i class="fa-solid fa-pen-to-square me-1"></i> Editar Perfil
+                            </button>
+                            {{--@if(Auth::user()->role === 'admin')
+                                <a href="{{ route('page.profile') }}" class="btn btn-outline-secondary">
+                                    <i class="fa-solid fa-gauge-high me-1"></i> Dashboard
+                                </a>
+                            @endif--}}
+
+                            {{--@if(!$user->rightNumber)
                                 <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#verifyNumberModal">
                                     <i class="fa-solid fa-check-circle me-1"></i> Verificar Número
                                 </button>
-                            @endif
+                            @endif--}}
 
-                            @if(Auth::user()->role === 'admin')
+                            {{--@if(Auth::user()->role === 'admin')
                                 <form action="{{ route('page.profile', $user->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('PATCH')
@@ -166,7 +168,7 @@
                                         </button>
                                     @endif
                                 </form>
-                            @endif
+                            @endif--}}
                         </div>
                     </div>
                 </div>

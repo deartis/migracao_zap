@@ -11,7 +11,8 @@ class UserController
 
     public function index()
     {
-        return view('pages.adm.user');
+        $users = User::latest()->paginate(10); // Paginação opcional
+        return view('pages.adm.user', compact('users'));
     }
 
     public function canSend(Request $request)
@@ -70,6 +71,50 @@ class UserController
             'lastMessage' => null,
         ]);
         return redirect()->route('adm.user')->with('success', 'Usuário criado com sucesso!');
+    }
+
+// Exibe um usuário específico (GET /users/{user})
+    public function show(User $user)
+    {
+        return view('pages.adm.user.show', compact('user'));
+    }
+
+    // Exibe o formulário de edição (GET /users/{user}/edit)
+    public function edit(User $user)
+    {
+        return view('pages.adm.user.edit', compact('user'));
+    }
+
+    // Atualiza um usuário (PUT/PATCH /users/{user})
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'number' => 'nullable|string',
+            'msgLimit' => 'nullable|integer',
+            'role' => 'required|in:nu,admin',
+            'enabled' => 'boolean',
+        ]);
+
+        // Atualiza o usuário
+        $user->update($validated);
+
+        return redirect()->route('users.index')->with('success', 'Usuário atualizado!');
+    }
+
+    // Remove um usuário (DELETE /users/{user})
+    public function destroy(User $user)
+    {
+        $user->delete();
+        return redirect()->route('users.index')->with('success', 'Usuário excluído!');
+    }
+
+    // Rota adicional: Ativar/Desativar usuário (PATCH /users/{user}/toggle-status)
+    public function toggleStatus(User $user)
+    {
+        $user->update(['enabled' => !$user->enabled]);
+        return back()->with('success', 'Status alterado!');
     }
 
 }

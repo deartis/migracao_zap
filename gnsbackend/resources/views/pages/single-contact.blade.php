@@ -47,10 +47,10 @@
                         <div class="form-text">Formatos suportados: PDF, imagens, áudio, vídeo (máx. 5MB)</div>
                     </div>
 
-                    {{--<div class="mb-3">
+                    <div class="mb-3">
                         <label for="media-input" class="form-label">URL da Mídia (opcional)</label>
                         <input type="text" id="media-input" class="form-control" placeholder="https://exemplo.com/imagem.jpg">
-                    </div>--}}
+                    </div>
 
                     <button id="send-btn" class="btn btn-success w-100">
                         <i class="fas fa-paper-plane me-2"></i>Enviar Mensagem

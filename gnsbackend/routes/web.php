@@ -58,6 +58,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/adm/page/user', [UserController::class, 'index'])->name('adm.user');
         Route::get('/adm/page/register-user', [UserController::class, 'registerUser'])->name('adm.register.user');
         Route::post('/adm/page/register-user', [UserController::class, 'store'])->name('add.user');
+
+        //CRUDE Users
+        Route::resource('users', UserController::class);
     });
 
 });

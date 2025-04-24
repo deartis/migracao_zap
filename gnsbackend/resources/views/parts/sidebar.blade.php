@@ -56,11 +56,13 @@
                 <i class="bi bi-gear me-2 text-success"></i> <span>Dados do Perfil</span>
             </a>
         </li>
+        @if(Auth::user()->role === 'admin')
         <li class="nav-item" data-title="Área Administrativa">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{{ route('adm.user') }}">
                 <i class="bi bi-person-badge me-2 text-success"></i> <span>Área Administrativa</span>
             </a>
         </li>
+        @endif
         <li class="nav-item" data-title="Conectar Whatsapp">
             <a class="nav-link" href="#">
                 <i class="bi bi-whatsapp me-2 text-success"></i> <span>Conectar Whatsapp</span>
