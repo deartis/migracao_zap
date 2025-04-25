@@ -125,8 +125,13 @@ async function checkGlobalWhatsAppStatus() {
 // Conectar ao WhatsApp e mostrar QR Code
 async function connectWhatsApp() {
     try {
-        document.getElementById('qr-container').classList.remove('d-none');
-        document.getElementById('qr-placeholder').innerHTML = '<p class="text-muted">Carregando QR Code...</p>';
+        const qrContainer = document.getElementById('qr-container');
+        const qrPlaceholder = document.getElementById('qr-placeholder');
+        const messageForm = document.getElementById('message-form');
+
+        // Exibir o contêiner do QR Code
+        qrContainer.style.display = 'block'; // Substitui a remoção da classe 'd-none'
+        qrPlaceholder.innerHTML = '<p class="text-muted">Carregando QR Code...</p>';
 
         const response = await fetch('/whatsapp-connect');
         const data = await response.json();
@@ -138,14 +143,15 @@ async function connectWhatsApp() {
             qrImage.alt = 'WhatsApp QR Code';
             qrImage.className = 'mx-auto';
 
-            document.getElementById('qr-placeholder').innerHTML = '';
-            document.getElementById('qr-placeholder').appendChild(qrImage);
+            qrPlaceholder.innerHTML = '';
+            qrPlaceholder.appendChild(qrImage);
         } else if (data.status === 'connected') {
-            document.getElementById('qr-container').classList.add('d-none');
-            document.getElementById('message-form').classList.remove('d-none');
+            // Ocultar o contêiner do QR Code e exibir o formulário de mensagem
+            qrContainer.style.display = 'none'; // Substitui a adição da classe 'd-none'
+            messageForm.style.display = 'block'; // Substitui a remoção da classe 'd-none'
             await checkStatus(); // Atualizar status
         } else {
-            document.getElementById('qr-placeholder').innerHTML =
+            qrPlaceholder.innerHTML =
                 '<p class="text-danger">Não foi possível gerar o QR Code. Por favor, tente novamente.</p>';
         }
     } catch (error) {
