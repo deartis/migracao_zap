@@ -3,29 +3,6 @@
     <div class="">
         <div class="p-4">
 
-           {{-- <h1 class="text-center mb-4">
-                <i class="fab fa-whatsapp text-success me-2"></i>Teste de Integração WhatsApp
-            </h1>
-
-            <div class="mb-5">
-                <h2 class="h4 mb-3">Status da Conexão</h2>
-                <div class="d-flex align-items-center mb-3 gap-3">
-                    <span>Status:</span>
-                    <span id="connection-status" class="badge bg-secondary">Carregando...</span>
-                    <span id="phone-number" class="fst-italic"></span>
-                </div>
-                <button id="connect-btn" class="btn btn-primary">
-                    <i class="fas fa-plug me-2"></i>Conectar WhatsApp
-                </button>
-            </div>
-
-            <div id="qr-container" class="d-none mb-4 border border-2 border-dashed rounded p-4 text-center">
-                <h3 class="h5 mb-3">Escaneie o QR Code</h3>
-                <div id="qr-placeholder" class="d-flex align-items-center justify-content-center" style="height: 250px;">
-                    <p class="text-muted">Carregando QR Code...</p>
-                </div>
-            </div>--}}
-
             <div id="message-form" class="">
                 <h2 class="h4 mb-3">Enviar Mensagem</h2>
                 <div class="mb-3">
