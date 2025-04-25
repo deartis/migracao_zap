@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ConnectionController;
 use App\Http\Controllers\HistoricController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InportListController;
@@ -51,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/page/multiple-msg',[MultipleContactMsgController::class, 'index'])->name('page.multi.msg');
     Route::get('/dashboard', [WhatsAppController::class, 'dashboard'])->name('dashboard');
+    Route::get('/connection', [ConnectionController::class, 'index'])->name('page.connection');
 
 
     Route::middleware(['auth', 'role:admin'])->group(function(){

@@ -224,8 +224,6 @@ app.post("/send-message", extractToken, upload.single("media"), async (req, res)
     const file = req.file;
     const clientData = clients.get(token);
 
-    console.log(file);
-
     if (!clientData || clientData.status !== "connected") {
       return res.status(400).json({ error: "WhatsApp não conectado" });
     }
