@@ -2,7 +2,8 @@
 @section('content')
     <div class="">
         <div class="p-4">
-            <h1 class="text-center mb-4">
+
+           {{-- <h1 class="text-center mb-4">
                 <i class="fab fa-whatsapp text-success me-2"></i>Teste de Integração WhatsApp
             </h1>
 
@@ -23,9 +24,9 @@
                 <div id="qr-placeholder" class="d-flex align-items-center justify-content-center" style="height: 250px;">
                     <p class="text-muted">Carregando QR Code...</p>
                 </div>
-            </div>
+            </div>--}}
 
-            <div id="message-form" class="d-none">
+            <div id="message-form" class="">
                 <h2 class="h4 mb-3">Enviar Mensagem</h2>
                 <div class="mb-3">
                     @csrf
@@ -42,12 +43,12 @@
 
                     <!-- Novo campo para upload de arquivos -->
                     <div class="mb-3">
-                        <label for="file-input" class="form-label">Arquivo (opcional)</label>
+                        <label for="file-input" class="form-label">Arquivo</label>
                         <input type="file" id="file-input" class="form-control">
                         <div class="form-text">Formatos suportados: PDF, imagens, áudio, vídeo (máx. 5MB)</div>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-3 d-none">
                         <label for="media-input" class="form-label">URL da Mídia (opcional)</label>
                         <input type="text" id="media-input" class="form-control" placeholder="https://exemplo.com/imagem.jpg">
                     </div>

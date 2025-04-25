@@ -1,6 +1,2 @@
-2025/04/24-11:04:14.258 10770 Reusing MANIFEST /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/Local Storage/leveldb/MANIFEST-000001
-2025/04/24-11:04:14.258 10770 Recovering log #41
-2025/04/24-11:04:14.258 10770 Reusing old log /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/Local Storage/leveldb/000041.log 
-2025/04/24-12:14:26.986 112a4 Level-0 table #45: started
-2025/04/24-12:14:26.999 112a4 Level-0 table #45: 14074 bytes OK
-2025/04/24-12:14:27.008 112a4 Delete type=0 #41
+2025/04/24-17:22:05.561 1554b Creating DB /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/Local Storage/leveldb since it was missing.
+2025/04/24-17:22:05.583 1554b Reusing MANIFEST /home/jalvivi/Documentos/projetos/Jean_trabalhos/ZAP/migracao_zap/whatsapp-service/.wwebjs_auth/session-user-test_token_123/Default/Local Storage/leveldb/MANIFEST-000001
