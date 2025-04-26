@@ -220,6 +220,7 @@ app.get("/delete-session", extractToken, async (req, res) => {
 app.post("/send-message", extractToken, upload.single("media"), async (req, res) => {
   try {
     const token = req.token;
+    console.log('Enviado_'+token);
     const { number, message } = req.body;
     const file = req.file;
     const clientData = clients.get(token);

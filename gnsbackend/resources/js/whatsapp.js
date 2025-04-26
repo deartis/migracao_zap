@@ -1,5 +1,22 @@
 // Configuração inicial
-document.addEventListener('DOMContentLoaded', function () {
+//Busca o Token seguro
+
+//URL da API Globalmente
+const apiUrl = window.whatsappApiUrl;
+const apiToken = window.whatsappApiToken;
+
+async function getWhatsAppToken(){
+    const response = await fetch( '/whatsapp/token');
+    const data = await response.json();
+    return data.token;
+}
+document.addEventListener('DOMContentLoaded', async function () {
+    const token = await apiToken;
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
+
     // Verificar se os elementos globais de status existem
     const globalStatusIndicator = document.getElementById('global-status-indicator');
     const globalStatusText = document.getElementById('global-status-text');
@@ -41,6 +58,11 @@ document.addEventListener('DOMContentLoaded', function () {
             connectBtn.addEventListener('click', connectWhatsApp);
         }
 
+        const disconnectBtn = document.getElementById('disconnect-btn');
+        if (disconnectBtn) {
+            disconnectBtn.addEventListener('click', disconnectWhatsApp);
+        }
+
         const sendBtn = document.getElementById('send-btn');
         if (sendBtn) {
             sendBtn.addEventListener('click', sendMessage);
@@ -49,7 +71,54 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Verificar status da conexão
+// Verificar status da conexão
 async function checkStatus() {
+    try {
+        const response = await fetch('/whatsapp-status');
+        const data = await response.json();
+
+        const statusElement = document.getElementById('connection-status');
+        const phoneElement = document.getElementById('phone-number');
+        const connectBtn = document.getElementById('connect-btn');
+        const disconnectBtn = document.getElementById('disconnect-btn');
+
+        // Atualizar status
+        statusElement.textContent = data.status || 'Desconhecido';
+
+        // Atualizar classes CSS baseado no status
+        statusElement.className = 'badge';
+        if (data.status === 'connected') {
+            statusElement.classList.add('bg-success');
+            document.getElementById('message-form').classList.remove('d-none');
+            document.getElementById('qr-container').classList.add('d-none');
+
+            // Mostrar botão de desconexão e esconder botão de conexão
+            if (disconnectBtn) disconnectBtn.classList.remove('d-none');
+            if (connectBtn) connectBtn.classList.add('d-none');
+
+            if (data.phoneNumber) {
+                phoneElement.textContent = `Número conectado: ${data.phoneNumber}`;
+            }
+        } else if (data.status === 'connecting') {
+            statusElement.classList.add('bg-warning', 'text-dark');
+
+            // Esconder ambos os botões durante conexão
+            if (disconnectBtn) disconnectBtn.classList.add('d-none');
+            if (connectBtn) connectBtn.classList.add('d-none');
+        } else {
+            statusElement.classList.add('bg-secondary');
+            document.getElementById('message-form').classList.add('d-none');
+
+            // Mostrar botão de conexão e esconder botão de desconexão
+            if (disconnectBtn) disconnectBtn.classList.add('d-none');
+            if (connectBtn) connectBtn.classList.remove('d-none');
+        }
+    } catch (error) {
+        console.error('Erro ao verificar status:', error);
+    }
+}
+
+/*async function checkStatus() {
     try {
         const response = await fetch('/whatsapp-status');
         const data = await response.json();
@@ -80,7 +149,7 @@ async function checkStatus() {
     } catch (error) {
         console.error('Erro ao verificar status:', error);
     }
-}
+}*/
 
 // Função para verificar o status global do WhatsApp
 async function checkGlobalWhatsAppStatus() {
@@ -152,6 +221,74 @@ async function connectWhatsApp() {
         console.error('Erro ao conectar:', error);
         document.getElementById('qr-placeholder').innerHTML =
             `<p class="text-danger">Erro: ${error.message}</p>`;
+    }
+}
+
+/**
+ * Desconecta a sessão do WhatsApp
+ */
+async function disconnectWhatsApp() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    try {
+        // Mostrar indicador de carregamento ou desativar botão
+        const disconnectBtn = document.getElementById('disconnect-btn');
+        if (disconnectBtn) {
+            disconnectBtn.disabled = true;
+            disconnectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Desconectando...';
+        }
+
+        // Fazer a requisição para o endpoint de desconexão
+        const response = await fetch(apiUrl+'/delete-session',{
+            headers: {
+                'Authorization': `Bearer ${apiToken}`
+            }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            // Atualizar UI para mostrar desconectado
+            const statusElement = document.getElementById('connection-status');
+            if (statusElement) {
+                statusElement.textContent = 'Desconectado';
+                statusElement.className = 'badge bg-secondary';
+            }
+
+            // Limpar informação do número de telefone
+            const phoneElement = document.getElementById('phone-number');
+            if (phoneElement) {
+                phoneElement.textContent = '';
+            }
+
+            // Esconder formulário de mensagem se estiver visível
+            const messageForm = document.getElementById('message-form');
+            if (messageForm) {
+                messageForm.classList.add('d-none');
+            }
+
+            // Esconder container do QR code
+            const qrContainer = document.getElementById('qr-container');
+            if (qrContainer) {
+                qrContainer.classList.add('d-none');
+            }
+
+            // Mostrar mensagem de sucesso (opcional)
+            alert('WhatsApp desconectado com sucesso!');
+
+            // Atualizar status
+            checkStatus();
+        } else {
+            throw new Error('Falha ao desconectar WhatsApp');
+        }
+    } catch (error) {
+        console.error('Erro ao desconectar WhatsApp:', error);
+        alert(`Erro ao desconectar: ${error.message}`);
+    } finally {
+        // Restaurar botão de desconexão
+        const disconnectBtn = document.getElementById('disconnect-btn');
+        if (disconnectBtn) {
+            disconnectBtn.disabled = false;
+            disconnectBtn.innerHTML = '<i class="fas fa-unlink me-2"></i>Desconectar';
+        }
     }
 }
 

@@ -13,11 +13,24 @@ use App\Http\Controllers\WhatsAppController;
 use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Route;
 
+
+//Rota segura para gerar Token
+Route::middleware(['auth'])->get('/whatsapp/token', function(){
+    $user = auth()->user();
+    $token = Crypt::encryptString("user-{$user->id}");
+
+    return response()->json(['token' => $token]);
+});
+
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [HomeController::class,'index'])->name('home');
 
     // Rota pública para verificação de saúde (opcional)
-    Route::get('/whatsapp/health', function (WhatsAppService $service) {
+    Route::get('/whatsapp/health', [WhatsAppController::class, 'healthCheck']);
+    Route::get('/whatsapp-status', [WhatsAppController::class, 'checkConnection']);
+    Route::get('/whatsapp-connect', [WhatsAppController::class, 'startWhatsApp']);
+    /*Route::get('/whatsapp/health', function (WhatsAppService $service) {
         return $service->healthCheck()->json();
     });
 
@@ -34,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
 
         $response = $whatsapp->startWhatsApp($token);
         return response()->json($response->json());
-    })->name('whatsapp.connect');
+    })->name('whatsapp.connect');*/
 
 
     //Rotas comuns

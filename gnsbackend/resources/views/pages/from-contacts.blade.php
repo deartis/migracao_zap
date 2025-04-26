@@ -35,7 +35,7 @@
                     <div class="mb-4">
                         <label for="file" class="form-label fw-bold">Arquivo</label>
                         <div class="input-group">
-                            <input type="file" class="form-control @error('file') is-invalid @enderror" id="file" name="file">
+                            <input type="file" class="form-control @error('media') is-invalid @enderror" id="media" name="media">
                             <label class="input-group-text" for="file"><i class="fas fa-upload"></i></label>
                         </div>
                         <div class="form-text">Formatos suportados: PDF, JPEG, PNG (máx. 2MB)</div>
@@ -44,26 +44,11 @@
                         @enderror
                     </div>
 
-                    {{--<div class="mb-4">
-                        <label for="contacts_file" class="form-label fw-bold">Importar Contatos (opcional)</label>
-                        <div class="input-group">
-                            <input type="file" class="form-control @error('contacts_file') is-invalid @enderror" id="contacts_file" name="contacts_file" accept=".csv,.xlsx">
-                            <label class="input-group-text" for="contacts_file"><i class="fas fa-address-book"></i></label>
-                        </div>
-                        <div class="form-text">Faça upload de uma lista de contatos em formato CSV ou Excel</div>
-                        @error('contacts_file')
-                        <div class="text-danger">{{ $message }}</div>
-                        @enderror
-                    </div>--}}
-
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-success py-2 fw-bold">
                             <i class="fas fa-paper-plane me-2"></i>Enviar Mensagem
                         </button>
 
-                        {{--<button type="reset" class="btn btn-outline-secondary">
-                            <i class="fas fa-undo me-2"></i>Limpar Formulário
-                        </button>--}}
                     </div>
                 </form>
             </div>

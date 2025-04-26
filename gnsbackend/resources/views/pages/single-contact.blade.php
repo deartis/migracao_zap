@@ -3,10 +3,10 @@
     <div class="">
         <div class="p-4">
             <h1 class="text-center mb-4">
-                <i class="fab fa-whatsapp text-success me-2"></i>Teste de Integração WhatsApp
+                <i class="fab fa-whatsapp text-success me-2"></i>Mensagem Individual
             </h1>
 
-            <div class="mb-5">
+            <div class="mb-5 d-none">
                 <h2 class="h4 mb-3">Status da Conexão</h2>
                 <div class="d-flex align-items-center mb-3 gap-3">
                     <span>Status:</span>

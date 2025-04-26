@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class WhatsAppServiceProvider extends ServiceProvider
@@ -24,6 +26,7 @@ class WhatsAppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Compartilha as variáveis com todas as views
+        View::share('whatsappApiUrl', config('whatsapp.api_url'));
     }
 }
