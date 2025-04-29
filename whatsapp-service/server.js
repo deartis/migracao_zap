@@ -9,6 +9,14 @@ const { pipeline } = require("stream/promises");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" }); // Cria uploads/ temporário
 
+
+// Novo
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static');
+
+// Deixa o fluent-ffmpeg usar o caminho correto do ffmpeg
+ffmpeg.setFfmpegPath(ffmpegPath);
+
 const app = express();
 app.use(express.json());
 
@@ -220,7 +228,8 @@ app.get("/delete-session", extractToken, async (req, res) => {
 app.post("/send-message", extractToken, upload.single("media"), async (req, res) => {
   try {
     const token = req.token;
-    console.log('Enviado_'+token);
+    console.log('Token recebido:', token);
+
     const { number, message } = req.body;
     const file = req.file;
     const clientData = clients.get(token);
@@ -237,98 +246,72 @@ app.post("/send-message", extractToken, upload.single("media"), async (req, res)
     const chatId = `${formattedNumber}@c.us`;
 
     if (file) {
-      //const mediaPath = file.path;
-      //const mediaMessage = MessageMedia.fromFilePath(mediaPath);
+      console.log('Arquivo recebido:', file.originalname);
 
-      const ext = path.extname(file.originalname);
-      const newPath = `${file.path}${ext}`
+      const originalPath = file.path;
+      const ext = path.extname(file.originalname).toLowerCase();
+      const isVideo = ['.mp4', '.mov', '.avi', '.mkv'].includes(ext);
 
-      fs.renameSync(file.path, newPath);
+      let mediaPathToUse = originalPath;
 
-      const mediaMessage = MessageMedia.fromFilePath(newPath);
+      if (isVideo) {
+        console.log('Arquivo é vídeo, convertendo para compatibilidade...');
+
+        const convertedPath = originalPath.replace(/\.[^/.]+$/, "") + "_converted.mp4";
+
+        // Converte o vídeo para H264 + AAC
+        await new Promise((resolve, reject) => {
+          ffmpeg(originalPath)
+              .outputOptions([
+                '-vcodec libx264',
+                '-acodec aac',
+                '-strict -2',
+                '-movflags faststart',
+                '-preset veryfast',
+              ])
+              .output(convertedPath)
+              .on('end', () => {
+                console.log('Conversão concluída:', convertedPath);
+                resolve();
+              })
+              .on('error', (err) => {
+                console.error('Erro na conversão de vídeo:', err);
+                reject(err);
+              })
+              .run();
+        });
+
+        mediaPathToUse = convertedPath;
+      }
+
+      // Lê o arquivo convertido (ou original)
+      const mediaData = fs.readFileSync(mediaPathToUse);
+      const base64Data = mediaData.toString('base64');
+
+      const mediaMessage = new MessageMedia(
+          isVideo ? 'video/mp4' : file.mimetype,
+          base64Data,
+          file.originalname
+      );
 
       const sent = await clientData.client.sendMessage(chatId, mediaMessage, {
         caption: message,
       });
 
-      fs.unlinkSync(newPath); // Limpa o arquivo temporário
-
-      return res.json({
-        success: true,
-        messageId: sent.id._serialized,
-        timestamp: Date.now(),
-      });
-
-
-    } else {
-      const sent = await clientData.client.sendMessage(chatId, message);
-      return res.json({
-        success: true,
-        messageId: sent.id._serialized,
-        timestamp: Date.now(),
-      });
-    }
-  } catch (e) {
-    console.error("Erro ao enviar mensagem:", e);
-    res.status(500).json({ error: e.message });
-  }
-});
-
-/*
-app.post("/send-message", extractToken,upload.single("media"), async (req, res) => {
-  try {
-    const token = req.token;
-    const { number, message, media } = req.body;
-    const clientData = clients.get(token);
-
-    if (!clientData || clientData.status !== "connected") {
-      return res.status(400).json({ error: "WhatsApp não conectado" });
-    }
-
-    // Formatar número para padrão internacional
-    let formattedNumber = number.replace(/\D/g, "");
-    if (!formattedNumber.startsWith("55")) {
-      formattedNumber = "55" + formattedNumber;
-    }
-
-    const chatId = `${formattedNumber}@c.us`;
-
-    if (media) {
-      try {
-        // Baixa a mídia do storage do Laravel
-        const mediaResponse = await axios.get(media, {
-          responseType: "stream",
-        });
-        const mediaPath = `/tmp/${path.basename(media)}`;
-        await pipeline(mediaResponse.data, fs.createWriteStream(mediaPath));
-
-        // Envia com mídia
-        const mediaMessage = MessageMedia.fromFilePath(mediaPath);
-        const sent = await clientData.client.sendMessage(chatId, mediaMessage, {
-          caption: message,
-        });
-
-        // Limpa o arquivo temporário
-        fs.unlinkSync(mediaPath);
-
-        return res.json({
-          success: true,
-          messageId: sent.id._serialized,
-          timestamp: Date.now(),
-        });
-      } catch (mediaError) {
-        console.error("Erro ao processar mídia:", mediaError);
-        // Tenta enviar só o texto
-        const sent = await clientData.client.sendMessage(chatId, message);
-        return res.json({
-          success: true,
-          messageId: sent.id._serialized,
-          timestamp: Date.now(),
-          warning: "Mídia não pôde ser enviada, apenas texto foi enviado",
-        });
+      // Limpa os arquivos temporários
+      fs.unlinkSync(originalPath);
+      if (mediaPathToUse !== originalPath) {
+        fs.unlinkSync(mediaPathToUse);
       }
+
+      return res.json({
+        success: true,
+        messageId: sent.id._serialized,
+        timestamp: Date.now(),
+      });
+
     } else {
-      // Envia apenas texto
+      // Se for mensagem normal (sem mídia)
       const sent = await clientData.client.sendMessage(chatId, message);
       return res.json({
         success: true,
@@ -336,12 +319,12 @@ app.post("/send-message", extractToken,upload.single("media"), async (req, res) 
         timestamp: Date.now(),
       });
     }
+
   } catch (e) {
     console.error("Erro ao enviar mensagem:", e);
     res.status(500).json({ error: e.message });
   }
 });
-*/
 
 // Saúde do servidor
 app.get("/health", (req, res) => {
