@@ -65,7 +65,7 @@
         @endif
         <li class="nav-item" data-title="Conectar Whatsapp">
             <a class="nav-link" href="{{ route('page.connection') }}">
-                <i class="bi bi-whatsapp me-2 text-success"></i> <span>Conectar Whatsapp</span>
+                <i class="bi bi-qr-code-scan me-2 text-success"></i> <span id="btn_conn">Conectar Whatsapp</span>
             </a>
         </li>
         <li class="nav-item" data-title="Sair">

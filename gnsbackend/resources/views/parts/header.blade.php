@@ -20,6 +20,7 @@
                 <i class="bi bi-person-circle" style="font-size: 27pt; margin-left: 10px"></i>
             </div>
         </div>
+
     </div>
 
 </div>

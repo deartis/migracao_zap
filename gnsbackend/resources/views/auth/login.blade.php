@@ -16,7 +16,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
-            @auth
+           {{-- @auth
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     Você já está logado como {{ auth()->user()->name }}.
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -26,7 +26,7 @@
                         Você não está logado.
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-            @endauth
+            @endauth--}}
 
             <form action="{{ route('login') }}" method="post">
                 @csrf

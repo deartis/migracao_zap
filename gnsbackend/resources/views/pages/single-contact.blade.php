@@ -42,7 +42,7 @@
 
                     <!-- Novo campo para upload de arquivos -->
                     <div class="mb-3">
-                        <label for="file-input" class="form-label">Arquivo (opcional)</label>
+                        <label for="file-input" class="form-label">Arquivo</label>
                         <input type="file" id="file-input" class="form-control">
                         <div class="form-text">Formatos suportados: PDF, imagens, áudio, vídeo (máx. 5MB)</div>
                     </div>

@@ -1,18 +1,19 @@
 import Chart from 'chart.js/auto';
 // Toggle sidebar on desktop
-document.querySelector('.menu-toggle').addEventListener('click', function() {
+console.log(window.whatsappApiUrl);
+document.querySelector('.menu-toggle').addEventListener('click', function () {
     document.querySelector('.sidebar').classList.toggle('collapsed');
     document.querySelector('.main-content').classList.toggle('expanded');
 });
 
 // Toggle sidebar on mobile
-document.querySelector('.mobile-menu-toggle').addEventListener('click', function() {
+document.querySelector('.mobile-menu-toggle').addEventListener('click', function () {
     document.querySelector('.sidebar').classList.toggle('mobile-active');
     document.querySelector('.sidebar-overlay').classList.toggle('active');
 });
 
 // Close sidebar when clicking overlay
-document.querySelector('.sidebar-overlay').addEventListener('click', function() {
+document.querySelector('.sidebar-overlay').addEventListener('click', function () {
     document.querySelector('.sidebar').classList.remove('mobile-active');
     document.querySelector('.sidebar-overlay').classList.remove('active');
 });
@@ -32,7 +33,9 @@ handleResize();
 // Listen for window resize
 window.addEventListener('resize', handleResize);
 
+//=======================================
 // Chart.js Configuration
+//=======================================
 const createDonutChart = (elementId, percentage, colors) => {
     const ctx = document.getElementById(elementId).getContext('2d');
 
@@ -66,10 +69,10 @@ const createDonutChart = (elementId, percentage, colors) => {
 };
 
 // Usage Chart - 30%
-createDonutChart('usageChart', 30, ['#0dcaf0', '#e9ecef']);
+createDonutChart('usageChart', window.usoPacote, ['#0dcaf0', '#e9ecef']);
 
 // Messages Chart - 10/4000 (0.25%)
-createDonutChart('messagesChart', 0.25, ['#20c997', '#e9ecef']);
+createDonutChart('messagesChart', window.usoPacote, ['#20c997', '#e9ecef']);
 
 // Errors Chart - 2 errors
 createDonutChart('errorsChart', 2, ['#dc3545', '#e9ecef']);

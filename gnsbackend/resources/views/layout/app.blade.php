@@ -23,7 +23,7 @@
         body {
             min-height: 100vh;
             overflow-x: hidden;
-            font-family: "Trebuchet MS", sans-serif;
+           /* font-family: "Trebuchet MS", sans-serif;*/
         }
         .sidebar {
             width: var(--sidebar-width);
@@ -243,12 +243,12 @@
         </div>
     </div>
 </div>
-
+@stack('scriptvar')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     window.whatsappApiToken = "{{ $token }}";
     window.whatsappApiUrl = "{{ $whatsappApiUrl }}";
-    //console.log("URL da API do WhatsApp: {{ $whatsappApiUrl }}");
+    console.log(window.usoPacote);
 
     document.addEventListener('DOMContentLoaded', function () {
         const menuToggle = document.getElementById('menuToggle');
@@ -276,6 +276,7 @@
         });
     });
 </script>
+
 @vite('resources/js/chart-sidebar.js')
 </body>
 </html>

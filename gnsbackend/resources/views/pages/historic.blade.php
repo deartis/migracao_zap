@@ -32,7 +32,7 @@
         </div>
 
         <div class="card shadow-lg rounded-4">
-            <div class="card-header bg-dark text-white rounded-top-4">
+            <div class="card-header bg-dark text-white rounded-top-3">
                 <h5 class="mb-0"><i class="bi bi-clock-history"></i> Últimos Envios</h5>
             </div>
             <div class="card-body p-0">

@@ -1,15 +1,13 @@
-// Configuração inicial
-//Busca o Token seguro
-
 //URL da API Globalmente
 const apiUrl = window.whatsappApiUrl;
 const apiToken = window.whatsappApiToken;
 
-async function getWhatsAppToken(){
-    const response = await fetch( '/whatsapp/token');
+/*async function getWhatsAppToken() {
+    const response = await fetch('/whatsapp/token');
     const data = await response.json();
     return data.token;
-}
+}*/
+
 document.addEventListener('DOMContentLoaded', async function () {
     const token = await apiToken;
     const headers = {
@@ -69,9 +67,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 });
-
+//==================================================================
 // Verificar status da conexão
-// Verificar status da conexão
+//==================================================================
 async function checkStatus() {
     try {
         const response = await fetch('/whatsapp-status');
@@ -118,62 +116,38 @@ async function checkStatus() {
     }
 }
 
-/*async function checkStatus() {
-    try {
-        const response = await fetch('/whatsapp-status');
-        const data = await response.json();
-
-        const statusElement = document.getElementById('connection-status');
-        const phoneElement = document.getElementById('phone-number');
-        const statusIndicator = document.getElementById('status-indicator');
-
-        // Atualizar status
-        statusElement.textContent = data.status || 'Desconhecido';
-
-        // Atualizar classes CSS baseado no status
-        statusElement.className = 'badge';
-        if (data.status === 'connected') {
-            statusElement.classList.add('bg-success');
-            document.getElementById('message-form').classList.remove('d-none');
-            document.getElementById('qr-container').classList.add('d-none');
-
-            if (data.phoneNumber) {
-                phoneElement.textContent = `Número conectado: ${data.phoneNumber}`;
-            }
-        } else if (data.status === 'connecting') {
-            statusElement.classList.add('bg-warning', 'text-dark');
-        } else {
-            statusElement.classList.add('bg-secondary');
-            document.getElementById('message-form').classList.add('d-none');
-        }
-    } catch (error) {
-        console.error('Erro ao verificar status:', error);
-    }
-}*/
-
+//==================================================================
 // Função para verificar o status global do WhatsApp
+//==================================================================
 async function checkGlobalWhatsAppStatus() {
     try {
         const response = await fetch('/whatsapp-status');
         const data = await response.json();
 
         // Obter elementos
-        const statusCircle = document.querySelector('.status-circle');
-        const statusText = document.getElementById('global-status-text');
+        const statusCircle          = document.querySelector('.status-circle');
+        const statusText        = document.getElementById('global-status-text');
+        const btnConn           = document.getElementById('btn_conn');
 
         // Atualizar o texto do status
         statusText.textContent =
             data.status === 'connected' ? 'On-line' :
-            data.status === 'connecting' ? 'Conectando...' :
-                'Desconectado';
+                data.status === 'connecting' ? 'Conectando...' :
+                    'Desconectado';
 
         // Atualizar a cor do círculo
         if (data.status === 'connected') {
             statusCircle.style.backgroundColor = '#198754'; // Verde
+            btnConn.textContent = 'Desconectar WhatsApp';
+            btnConn.style.color = '#dc3545'; // Vermelho
         } else if (data.status === 'connecting') {
             statusCircle.style.backgroundColor = '#ffc107'; // Amarelo
+            btnConn.textContent = 'Conectar WhatsApp';
+            btnConn.style.color = '#198754'; // Verde
         } else {
             statusCircle.style.backgroundColor = '#dc3545'; // Vermelho
+            btnConn.textContent = 'Conectar WhatsApp';
+            btnConn.style.color = '#198754'; // Verde
         }
 
     } catch (error) {
@@ -191,7 +165,9 @@ async function checkGlobalWhatsAppStatus() {
     }
 }
 
+//==================================================================
 // Conectar ao WhatsApp e mostrar QR Code
+//==================================================================
 async function connectWhatsApp() {
     try {
         document.getElementById('qr-container').classList.remove('d-none');
@@ -224,9 +200,9 @@ async function connectWhatsApp() {
     }
 }
 
-/**
- * Desconecta a sessão do WhatsApp
- */
+//==================================================================
+//Desconecta a sessão do WhatsApp
+//==================================================================
 async function disconnectWhatsApp() {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     try {
@@ -238,7 +214,7 @@ async function disconnectWhatsApp() {
         }
 
         // Fazer a requisição para o endpoint de desconexão
-        const response = await fetch(apiUrl+'/delete-session',{
+        const response = await fetch(apiUrl + '/delete-session', {
             headers: {
                 'Authorization': `Bearer ${apiToken}`
             }
@@ -292,7 +268,9 @@ async function disconnectWhatsApp() {
     }
 }
 
+//==================================================================
 // Enviar mensagem
+//==================================================================
 async function sendMessage() {
     try {
         const resultContainer = document.getElementById('result-container');
@@ -341,7 +319,10 @@ async function sendMessage() {
         formData.append('_token', token);
         formData.append('number', number);
         formData.append('message', message);
-        formData.append('media', fileInput.files[0]);
+        if (fileInput.files && fileInput.files[0]) {
+            formData.append('media', fileInput.files[0]);
+        }
+        //formData.append('media', fileInput.files[0]);
 
         // Adicionar arquivo se existir
         if (mediaInput.files && mediaInput.files[0]) {

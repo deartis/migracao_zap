@@ -96,7 +96,7 @@ class WhatsAppController extends Controller
             $response = $this->whatsappService->sendMessage(
                 $validated['number'],
                 $validated['message'],
-                $mediaFile, //?? $validated['media'] ?? null, // Prioriza o arquivo enviado
+                $mediaFile ?? $validated['media'] ?? null, // Prioriza o arquivo enviado
                 $this->getUserToken()
             );
 
@@ -204,8 +204,7 @@ class WhatsAppController extends Controller
             )->delay(now()->addSeconds($index * rand(4, 10)));
         }
 
-        return response()->json(['status' => 'Mensagens em processo de envio']);
-
+        return redirect()->back()->with('success', 'Mensagens enviadas com sucesso!');
     }
 
     public function dashboard()

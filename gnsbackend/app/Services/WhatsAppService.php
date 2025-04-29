@@ -15,7 +15,7 @@ class WhatsAppService
     public function __construct($baseUrl = null, $token = null)
     {
         $this->baseUrl = $baseUrl ?? env('WHATSAPP_API_URL', 'http://localhost:3000');
-        $this->token = $token ?? env('WHATSAPP_API_TOKEN', 'CQpfjesS/ny0UFCNijptmQM2z1enBxLBY6Sq1C6e9d4=');
+        $this->token = $token;
     }
 
     /**
@@ -96,7 +96,7 @@ class WhatsAppService
             // Remove qualquer extensão antiga e adiciona a correta
             $filenameWithoutExt = pathinfo($originalFilename, PATHINFO_FILENAME);
             $finalFilename = $extension ? $filenameWithoutExt . '.' . $extension : $originalFilename;
-            \Log::info('Nome final do arquivo:', ['filename' => $finalFilename]);
+
 
             $multipart[] = [
                 'name' => 'media',
@@ -119,8 +119,6 @@ class WhatsAppService
                  ],
              ];
          }*/
-
-        \Log::info('Enviando multipart:', $multipart);
 
         return $request->asMultipart()->post("{$this->baseUrl}/send-message", $multipart);
     }

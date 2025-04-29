@@ -32,7 +32,7 @@
                         @enderror
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-4 d-none">
                         <label for="file" class="form-label fw-bold">Arquivo</label>
                         <div class="input-group">
                             <input type="file" class="form-control @error('media') is-invalid @enderror" id="media" name="media">

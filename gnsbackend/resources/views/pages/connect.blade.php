@@ -13,22 +13,24 @@
 
             <div class="d-grid mt-4">
                 <button id="disconnect-btn" class="btn btn-danger d-none" onclick="disconnectWhatsApp()">
-                    <i class="fas fa-unlink me-2"></i>Desconectar
+                    <i class="bi bi-unlink me-2"></i>Desconectar
                 </button>
             </div>
         </div>
     </div>
     <script>
-        //console.log();
+        window.whatsappApiUrl = "{{$whatsappApiUrl}}";
+        console.log(window.whatsappApiUrl);
         document.addEventListener('DOMContentLoaded', function () {
-            const token = "{{ auth()->user()->id }}"; // Use dinamicamente se precisar
+            const token = "{{ auth()->user()->id }}";
+            const urlApi = window.whatsappApiUrl;
             const headers = {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             };
             async function fetchQRCode() {
                 try {
-                    const response = await fetch('http://localhost:3000/start-whatsapp', { headers });
+                    const response = await fetch(urlApi+'/start-whatsapp', { headers });
                     const data = await response.json();
 
                     const qrContainer = document.getElementById('qr-container');
@@ -63,7 +65,7 @@
                     disconnectBtn.disabled = true;
                     disconnectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Desconectando...';
 
-                    const response = await fetch('http://localhost:3000/delete-session', {
+                    const response = await fetch(urlApi+'/delete-session', {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -90,7 +92,7 @@
                 } finally {
                     const disconnectBtn = document.getElementById('disconnect-btn');
                     disconnectBtn.disabled = false;
-                    disconnectBtn.innerHTML = '<i class="fas fa-unlink me-2"></i>Desconectar';
+                    disconnectBtn.innerHTML = '<i class="bi bi-unlink me-2"></i>Desconectar';
                 }
             };
         });

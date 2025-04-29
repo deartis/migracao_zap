@@ -30,25 +30,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/whatsapp/health', [WhatsAppController::class, 'healthCheck']);
     Route::get('/whatsapp-status', [WhatsAppController::class, 'checkConnection']);
     Route::get('/whatsapp-connect', [WhatsAppController::class, 'startWhatsApp']);
-    /*Route::get('/whatsapp/health', function (WhatsAppService $service) {
-        return $service->healthCheck()->json();
-    });
-
-    Route::get('/whatsapp-status', function (WhatsAppService $whatsapp) {
-        $token = env('WHATSAPP_API_TOKEN');
-
-        $response = $whatsapp->checkConnection($token);
-
-        return response()->json($response->json());
-    })->name('whatsapp.status');
-
-    Route::get('/whatsapp-connect', function (WhatsAppService $whatsapp) {
-        $token = env('WHATSAPP_API_TOKEN');
-
-        $response = $whatsapp->startWhatsApp($token);
-        return response()->json($response->json());
-    })->name('whatsapp.connect');*/
-
 
     //Rotas comuns
     Route::get('/page/single-contact', [SingleContactController::class, 'index'])->name('page.single.contact');
