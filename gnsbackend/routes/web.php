@@ -40,6 +40,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/historic', [HistoricController::class, 'index'])->name('page.historic');
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('page.profile');
+    Route::put('/profile/{user}', [ProfileController::class, 'update'])->name('page.update.profile');
+    Route::post('/profile/update-password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
 
     Route::get('/page/from-sheet',[InportListController::class, 'index'])->name('page.from.sheet');
     Route::post('/page/from-sheet',[InportListController::class, 'uploadSheet'])->name('upload.sheet');

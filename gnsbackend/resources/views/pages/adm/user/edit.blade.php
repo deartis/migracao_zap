@@ -17,7 +17,7 @@
 
         <form action="{{ route('users.update', $user->id) }}" method="POST">
             @csrf
-            @method('PUT') <!-- Define o método HTTP como PUT -->
+            @method('PUT')
 
             <div class="row g-3">
                 <!-- Nome -->
