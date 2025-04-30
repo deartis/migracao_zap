@@ -152,33 +152,6 @@ class WhatsAppController extends Controller
         return null;
     }*/
 
-    /**
-     * -----------------------------------------------
-     * ===============================================
-     * Importa os contatos
-     * ===============================================
-     * -----------------------------------------------
-     */
-    public function importarContatos(Request $request)
-    {
-        $request->validate([
-            'arquivo' => 'required|file|mimes:xls,xlsx,csv',
-            'mensagem' => 'required|string'
-        ]);
-
-        $contatos = Excel::toArray(new ContatosImport, $request->file('arquivo'))[0];
-        $mensagem = $request->input('mensagem');
-
-        foreach ($contatos as $contato) {
-            ProcessarEnvioWhatsapp::dispatch($contato, $mensagem);
-        }
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Processamento de ' . count($contatos) . ' Contatos iniciado com sucesso.'
-        ]);
-    }
-
     //==================================//
     // ==== Enviar mensagem em massa ===//
     //==================================//
@@ -187,20 +160,23 @@ class WhatsAppController extends Controller
         $message = $request->input('message');
         $token = $this->getUserToken();
         $filePath = null;
+        $userId = auth()->id();
 
         if ($request->hasFile('media')) {
             $file = $request->file('media');
             $filePath = $file->store('whatsapp-media', 'public');
         }
 
-        $contacts = Historic::whereNotNull('contact')->get();
+        $contacts = Historic::whereNotNull('contact')->where('user_id', $userId)->get();
 
         foreach ($contacts as $index => $contact) {
             SendWhatsAppMessageJob::dispatch(
                 $contact->contact,
                 $message,
                 $token,
-                $filePath // caminho do arquivo em vez do objeto
+                $filePath,
+                $userId
+
             )->delay(now()->addSeconds($index * rand(4, 10)));
         }
 

@@ -231,6 +231,7 @@
         }
 
     </style>
+    @yield('styles');
 </head>
 <body>
 @include('parts.sidebar')
@@ -243,6 +244,8 @@
         </div>
     </div>
 </div>
+
+<x-whatsapp-button phone="5522998243838" label="Suporte" />
 @stack('scriptvar')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -276,7 +279,7 @@
         });
     });
 </script>
-
+@yield('scripts')
 @vite('resources/js/chart-sidebar.js')
 </body>
 </html>

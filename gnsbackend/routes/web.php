@@ -51,6 +51,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [WhatsAppController::class, 'dashboard'])->name('dashboard');
     Route::get('/connection', [ConnectionController::class, 'index'])->name('page.connection');
 
+    Route::prefix('whatsapp')->group(function () {
+        Route::get('/contacts', [ToRespondMsgController::class, 'getContacts']);
+        Route::get('/messages/{contactId}', [ToRespondMsgController::class, 'getMessages']);
+        Route::post('/send-message', [ToRespondMsgController::class, 'sendMessage']);
+        Route::post('/webhook', [ToRespondMsgController::class, 'webhook']);
+    });
 
     Route::middleware(['auth', 'role:admin'])->group(function(){
         //Rotas de admins
