@@ -9,10 +9,9 @@ const { pipeline } = require("stream/promises");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" }); // Cria uploads/ temporário
 
-
 // Novo
-const ffmpeg = require('fluent-ffmpeg');
-const ffmpegPath = require('ffmpeg-static');
+const ffmpeg = require("fluent-ffmpeg");
+const ffmpegPath = require("ffmpeg-static");
 
 // Deixa o fluent-ffmpeg usar o caminho correto do ffmpeg
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -225,114 +224,117 @@ app.get("/delete-session", extractToken, async (req, res) => {
 
 // Rota para enviar mensagens
 
-app.post("/send-message", extractToken, upload.single("media"), async (req, res) => {
-  try {
-    const token = req.token;
-    console.log('Token recebido:', token);
+app.post(
+  "/send-message",
+  extractToken,
+  upload.single("media"),
+  async (req, res) => {
+    try {
+      const token = req.token;
+      console.log("Token recebido:", token);
 
-    const { number, message } = req.body;
-    const file = req.file;
-    const clientData = clients.get(token);
+      const { number, message } = req.body;
+      const file = req.file;
+      const clientData = clients.get(token);
 
-    if (!clientData || clientData.status !== "connected") {
-      return res.status(400).json({ error: "WhatsApp não conectado" });
-    }
+      if (!clientData || clientData.status !== "connected") {
+        return res.status(400).json({ error: "WhatsApp não conectado" });
+      }
 
-    let formattedNumber = number.replace(/\D/g, "");
-    if (!formattedNumber.startsWith("55")) {
-      formattedNumber = "55" + formattedNumber;
-    }
+      let formattedNumber = number.replace(/\D/g, "");
+      if (!formattedNumber.startsWith("55")) {
+        formattedNumber = "55" + formattedNumber;
+      }
 
-    const chatId = `${formattedNumber}@c.us`;
+      const chatId = `${formattedNumber}@c.us`;
 
-    if (file) {
-      console.log('Arquivo recebido:', file.originalname);
+      if (file) {
+        console.log("Arquivo recebido:", file.originalname);
 
-      const originalPath = file.path;
-      const ext = path.extname(file.originalname).toLowerCase();
-      const isVideo = ['.mp4', '.mov', '.avi', '.mkv'].includes(ext);
+        const originalPath = file.path;
+        const ext = path.extname(file.originalname).toLowerCase();
+        const isVideo = [".mp4", ".mov", ".avi", ".mkv"].includes(ext);
 
-      let mediaPathToUse = originalPath;
+        let mediaPathToUse = originalPath;
 
-      if (isVideo) {
-        console.log('Arquivo é vídeo, convertendo para compatibilidade...');
+        if (isVideo) {
+          console.log("Arquivo é vídeo, convertendo para compatibilidade...");
 
-        const convertedPath = originalPath.replace(/\.[^/.]+$/, "") + "_converted.mp4";
+          const convertedPath =
+            originalPath.replace(/\.[^/.]+$/, "") + "_converted.mp4";
 
-        // Converte o vídeo para H264 + AAC
-        await new Promise((resolve, reject) => {
-          ffmpeg(originalPath)
+          // Converte o vídeo para H264 + AAC
+          await new Promise((resolve, reject) => {
+            ffmpeg(originalPath)
               .outputOptions([
-                '-vcodec libx264',
-                '-acodec aac',
-                '-strict -2',
-                '-movflags faststart',
-                '-preset veryfast',
+                "-vcodec libx264",
+                "-acodec aac",
+                "-strict -2",
+                "-movflags faststart",
+                "-preset veryfast",
               ])
               .output(convertedPath)
-              .on('end', () => {
-                console.log('Conversão concluída:', convertedPath);
+              .on("end", () => {
+                console.log("Conversão concluída:", convertedPath);
                 resolve();
               })
-              .on('error', (err) => {
-                console.error('Erro na conversão de vídeo:', err);
+              .on("error", (err) => {
+                console.error("Erro na conversão de vídeo:", err);
                 reject(err);
               })
               .run();
+          });
+
+          mediaPathToUse = convertedPath;
+        }
+
+        // Lê o arquivo convertido (ou original)
+        const mediaData = fs.readFileSync(mediaPathToUse);
+        const base64Data = mediaData.toString("base64");
+
+        const mediaMessage = new MessageMedia(
+          isVideo ? "video/mp4" : file.mimetype,
+          base64Data,
+          file.originalname,
+        );
+
+        const sent = await clientData.client.sendMessage(chatId, mediaMessage, {
+          caption: message,
         });
 
-        mediaPathToUse = convertedPath;
+        // Limpa os arquivos temporários
+        fs.unlinkSync(originalPath);
+        if (mediaPathToUse !== originalPath) {
+          fs.unlinkSync(mediaPathToUse);
+        }
+
+        return res.json({
+          success: true,
+          messageId: sent.id._serialized,
+          timestamp: Date.now(),
+        });
+      } else {
+        // Se for mensagem normal (sem mídia)
+        const sent = await clientData.client.sendMessage(chatId, message);
+        return res.json({
+          success: true,
+          messageId: sent.id._serialized,
+          timestamp: Date.now(),
+        });
       }
-
-      // Lê o arquivo convertido (ou original)
-      const mediaData = fs.readFileSync(mediaPathToUse);
-      const base64Data = mediaData.toString('base64');
-
-      const mediaMessage = new MessageMedia(
-          isVideo ? 'video/mp4' : file.mimetype,
-          base64Data,
-          file.originalname
-      );
-
-      const sent = await clientData.client.sendMessage(chatId, mediaMessage, {
-        caption: message,
-      });
-
-      // Limpa os arquivos temporários
-      fs.unlinkSync(originalPath);
-      if (mediaPathToUse !== originalPath) {
-        fs.unlinkSync(mediaPathToUse);
-      }
-
-      return res.json({
-        success: true,
-        messageId: sent.id._serialized,
-        timestamp: Date.now(),
-      });
-
-    } else {
-      // Se for mensagem normal (sem mídia)
-      const sent = await clientData.client.sendMessage(chatId, message);
-      return res.json({
-        success: true,
-        messageId: sent.id._serialized,
-        timestamp: Date.now(),
-      });
+    } catch (e) {
+      console.error("Erro ao enviar mensagem:", e);
+      res.status(500).json({ error: e.message });
     }
-
-  } catch (e) {
-    console.error("Erro ao enviar mensagem:", e);
-    res.status(500).json({ error: e.message });
-  }
-});
+  },
+);
 
 // Saúde do servidor
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () =>
   console.log(`Servidor WhatsApp rodando na porta ${PORT}`),
 );
-

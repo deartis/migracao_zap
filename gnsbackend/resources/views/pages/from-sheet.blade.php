@@ -229,7 +229,76 @@
         </div>
     </div>
 
+@endsection
+
+@section('script')
+    <!-- Biblioteca XLSX -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Seu script principal -->
+    <script src="{{ asset('js/script_placeholders_externo.js') }}"></script>
+
+    <!-- Script mínimo só pra inicializar leitura do Excel -->
     <script>
+        // Variáveis globais
+        let colunasDisponiveis = [];
+        let previewData = [];
+
+        // AQUI está o segredo: declaramos a função no window (fica global)
+        window.handleFileSelect = function (evt) {
+            const file = evt.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = e.target.result;
+                const workbook = XLSX.read(data, {type: 'binary'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+
+                if (jsonData.length < 2) {
+                    alert('O arquivo precisa ter pelo menos 1 linha de dados.');
+                    return;
+                }
+
+                colunasDisponiveis = jsonData[0];
+                previewData = jsonData.slice(1);
+
+                showTablePreview(jsonData);
+
+                document.getElementById('fileName').innerText = file.name;
+                document.getElementById('fileSize').innerText = (file.size / 1024).toFixed(2) + ' KB';
+                document.getElementById('fileDetails').style.display = 'block';
+                document.getElementById('tablePreview').style.display = 'block';
+                document.getElementById('btnProximoPasso1').disabled = false;
+            };
+            reader.readAsBinaryString(file);
+        }
+
+        // Função auxiliar para montar a tabela
+        function showTablePreview(data) {
+            const table = document.getElementById('previewTable');
+            table.innerHTML = '';
+
+            data.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                row.forEach(cell => {
+                    const tag = index === 0 ? 'th' : 'td';
+                    const cellElem = document.createElement(tag);
+                    cellElem.textContent = cell ?? '';
+                    tr.appendChild(cellElem);
+                });
+                table.appendChild(tr);
+            });
+        }
+
+        // Adicionar evento no input de arquivo
+        document.getElementById('fileInput').addEventListener('change', window.handleFileSelect);
+    </script>
+@endsection
+
+{{--<script>
         let previewData = []; // Dados importados do Excel
         let colunasDisponiveis = []; // Nome das colunas
 
@@ -323,7 +392,6 @@
                 ${coluna}
             </label>
         `;
-
                 form.appendChild(div);
             });
         }
@@ -437,7 +505,6 @@
             document.getElementById('totalRecipients').innerText = previewData.length;
         });
 
-
         document.getElementById('btnVoltarPasso3').addEventListener('click', function() {
             goToStep('step3', 'step2', 66);
         });
@@ -451,94 +518,4 @@
             alert('Mensagens enviadas! 🚀');
             location.reload();
         });
-    </script>
-
-
-@endsection
-
-{{--
-@extends('layout.app') --}}
-{{--<div class="container py-1">
-
-        <div class="container py-1">
-
-            @bloqueado
-
-            <div class="alert alert-danger text-center">
-                Sua conta está bloqueada. Por favor, entre em contato com o suporte.
-            </div>
-
-            @else
-
-                @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                @endif
-                @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ session('error') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                @endif
-                <div class="row justify-content-center">
-                    <div class="col-md-12">
-                        <div class="card shadow-lg rounded-4">
-                            <div class="card-header bg-primary text-white text-center fs-5">
-                                Upload de Arquivo (.CSV .XLSX .XSL .XML .ODS)
-                            </div>
-                            <div class="card-body">
-                                <form action="{{ route('upload.sheet') }}" method="POST" enctype="multipart/form-data">
-                                    @csrf
-                                    <div class="mb-3">
-                                        <label for="csv_file" class="form-label">Selecione o arquivo</label>
-                                        <input class="form-control" type="file" name="csv_file" id="csv_file"
-                                               accept=".csv, .xls, .xlsx, .xml, .ods"
-                                               required>
-                                    </div>
-                                    <div class="d-grid gap-2">
-                                        <button type="submit" class="btn btn-success">
-                                            <i class="bi bi-upload"></i> Enviar Lista
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <h4 class="mt-5">Contatos Importados</h4>
-
-                @if($contatos->isEmpty())
-                    <div class="alert alert-info">Nenhum contato foi importado ainda.</div>
-                @else
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped table-hover mt-3">
-                            <thead class="table-success">
-                            <tr>
-                                <th>Nome</th>
-                                <th>Número</th>
-                                <th>Status</th>
-                                <th>Data</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @foreach($contatos as $contato)
-                                <tr>
-                                    <td>{{ $contato->name }}</td>
-                                    <td>{{ $contato->contact }}</td>
-                                    <td>{{ ucfirst($contato->status) }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($contato->created_at)->format('d/m/Y H:i') }}</td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
-            @endbloqueado
-
-        </div>
-
-    </div>--}}
-
+    </script>--}}

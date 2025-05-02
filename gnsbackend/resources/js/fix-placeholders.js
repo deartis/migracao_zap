@@ -1,4 +1,9 @@
-// Script completo para corrigir todos os problemas
+// Script completo com ajustes finais — externo e sem conflito com Blade
+
+// Garantir que as variáveis globais existem
+window.previewData = window.previewData || [];
+window.colunasDisponiveis = window.colunasDisponiveis || [];
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM carregado. Inicializando correções para os placeholders.');
 
@@ -16,8 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.type = 'button';
             btn.className = 'btn btn-outline-primary btn-sm me-2 mb-2';
 
-            // Exibir apenas o nome da coluna (sem as chaves)
-            btn.textContent = coluna;
+            // Exibir o próprio placeholder no botão
+            btn.textContent = '{{' + coluna + '}}';
 
             // Cria uma closure com o valor da coluna
             const colunaCapturada = coluna;
@@ -71,12 +76,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Para cada coluna selecionada, substituir placeholders
             colunasSelecionadas.forEach(coluna => {
                 const colunaIndex = colunasDisponiveis.indexOf(coluna);
-                // Obter o valor real da coluna para esta linha
                 const valorReal = colunaIndex >= 0 && row[colunaIndex] !== undefined ? row[colunaIndex] : '';
                 console.log(`Substituindo {{${coluna}}} por "${valorReal}"`);
 
-                // Substituir o placeholder pelo valor real
-                const regex = new RegExp('\\{\\{' + coluna + '\\}\\}', 'g');
+                const regex = new RegExp('\\{\\{' + coluna + '\\}\}', 'g');
                 msg = msg.replace(regex, valorReal);
             });
 
