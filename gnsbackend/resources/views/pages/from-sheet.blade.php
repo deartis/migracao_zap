@@ -7,20 +7,25 @@
             margin-bottom: 20px;
             transition: all 0.3s ease;
         }
+
         .step-active {
             box-shadow: 0 0 15px rgba(0, 123, 255, 0.2);
         }
+
         .step-inactive {
             opacity: 0.7;
         }
+
         .step-completed {
             border-left: 5px solid #28a745;
         }
+
         .step-header {
             display: flex;
             align-items: center;
             margin-bottom: 15px;
         }
+
         .step-number {
             width: 30px;
             height: 30px;
@@ -33,22 +38,27 @@
             margin-right: 10px;
             font-weight: bold;
         }
+
         .step-active .step-number {
             background-color: #0d6efd;
             color: white;
         }
+
         .step-completed .step-number {
             background-color: #28a745;
             color: white;
         }
+
         .placeholder-badge {
             cursor: pointer;
             margin: 5px;
             transition: all 0.2s;
         }
+
         .placeholder-badge:hover {
             transform: translateY(-2px);
         }
+
         #fileDropArea {
             border: 2px dashed #ccc;
             border-radius: 8px;
@@ -57,13 +67,16 @@
             cursor: pointer;
             transition: all 0.3s;
         }
+
         #fileDropArea:hover {
             border-color: #0d6efd;
             background-color: rgba(13, 110, 253, 0.05);
         }
+
         #fileInput {
             display: none;
         }
+
         .preview-container {
             max-height: 250px;
             overflow-y: auto;
@@ -229,76 +242,14 @@
         </div>
     </div>
 
-@endsection
 
-@section('script')
     <!-- Biblioteca XLSX -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+            integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <!-- Seu script principal -->
-    <script src="{{ asset('js/script_placeholders_externo.js') }}"></script>
-
-    <!-- Script mínimo só pra inicializar leitura do Excel -->
     <script>
-        // Variáveis globais
-        let colunasDisponiveis = [];
-        let previewData = [];
-
-        // AQUI está o segredo: declaramos a função no window (fica global)
-        window.handleFileSelect = function (evt) {
-            const file = evt.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = e.target.result;
-                const workbook = XLSX.read(data, {type: 'binary'});
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
-
-                if (jsonData.length < 2) {
-                    alert('O arquivo precisa ter pelo menos 1 linha de dados.');
-                    return;
-                }
-
-                colunasDisponiveis = jsonData[0];
-                previewData = jsonData.slice(1);
-
-                showTablePreview(jsonData);
-
-                document.getElementById('fileName').innerText = file.name;
-                document.getElementById('fileSize').innerText = (file.size / 1024).toFixed(2) + ' KB';
-                document.getElementById('fileDetails').style.display = 'block';
-                document.getElementById('tablePreview').style.display = 'block';
-                document.getElementById('btnProximoPasso1').disabled = false;
-            };
-            reader.readAsBinaryString(file);
-        }
-
-        // Função auxiliar para montar a tabela
-        function showTablePreview(data) {
-            const table = document.getElementById('previewTable');
-            table.innerHTML = '';
-
-            data.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                row.forEach(cell => {
-                    const tag = index === 0 ? 'th' : 'td';
-                    const cellElem = document.createElement(tag);
-                    cellElem.textContent = cell ?? '';
-                    tr.appendChild(cellElem);
-                });
-                table.appendChild(tr);
-            });
-        }
-
-        // Adicionar evento no input de arquivo
-        document.getElementById('fileInput').addEventListener('change', window.handleFileSelect);
-    </script>
-@endsection
-
-{{--<script>
         let previewData = []; // Dados importados do Excel
         let colunasDisponiveis = []; // Nome das colunas
 
@@ -328,7 +279,7 @@
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 const data = e.target.result;
                 const workbook = XLSX.read(data, {type: 'binary'});
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -392,6 +343,7 @@
                 ${coluna}
             </label>
         `;
+
                 form.appendChild(div);
             });
         }
@@ -416,7 +368,7 @@
                 btn.textContent = '{{' + coluna + '}}';
 
                 // IMPORTANTE: Função de clique completamente reescrita
-                btn.onclick = function() {
+                btn.onclick = function () {
                     console.log('Clique em placeholder:', coluna);
                     // Usar uma string literal direta, sem this.dataset
                     const placeholder = '{{' + coluna + '}}';
@@ -427,9 +379,8 @@
             });
         }
 
-
         // Preenche o select de prévia
-        function gerarPrevia(colunasSelecionadas) {
+        /*function gerarPrevia(colunasSelecionadas) {
             const selector = document.getElementById('previewSelector');
             selector.innerHTML = '<option selected>Selecione um registro para visualizar</option>';
 
@@ -440,7 +391,7 @@
                 selector.appendChild(opt);
             });
 
-            selector.addEventListener('change', function() {
+            selector.addEventListener('change', function () {
                 const idx = parseInt(this.value);
                 if (isNaN(idx)) return;
 
@@ -459,7 +410,7 @@
                 console.log('Mensagem processada:', msg);
                 document.getElementById('messagePreview').innerHTML = '<p>' + msg + '</p>';
             });
-        }
+        }*/
 
         // Insere texto no cursor do textarea
         function insertAtCursor(textarea, text) {
@@ -474,16 +425,16 @@
         }
 
         // Navegação dos passos
-        document.getElementById('btnProximoPasso1').addEventListener('click', function() {
+        document.getElementById('btnProximoPasso1').addEventListener('click', function () {
             gerarCamposSelecao();
             goToStep('step1', 'step2', 66);
         });
 
-        document.getElementById('btnVoltarPasso2').addEventListener('click', function() {
+        document.getElementById('btnVoltarPasso2').addEventListener('click', function () {
             goToStep('step2', 'step1', 33);
         });
 
-        document.getElementById('btnConfirmarSelecao').addEventListener('click', function() {
+        document.getElementById('btnConfirmarSelecao').addEventListener('click', function () {
             const checkboxes = document.querySelectorAll('#formSelecaoColunas input[type="checkbox"]');
             const colunasSelecionadas = [];
 
@@ -505,17 +456,307 @@
             document.getElementById('totalRecipients').innerText = previewData.length;
         });
 
-        document.getElementById('btnVoltarPasso3').addEventListener('click', function() {
+
+        document.getElementById('btnVoltarPasso3').addEventListener('click', function () {
             goToStep('step3', 'step2', 66);
         });
 
-        document.getElementById('btnEnviarMensagens').addEventListener('click', function() {
+        document.getElementById('btnEnviarMensagens').addEventListener('click', function () {
             const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
             modal.show();
         });
 
-        document.getElementById('btnConfirmarEnvio').addEventListener('click', function() {
+        // Substitua a função de confirmação de envio por esta:
+        document.getElementById('btnConfirmarEnvio').addEventListener('click', async function () {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+            modal.hide();
+
+            // Mostrar loading
+            const btnEnviar = document.getElementById('btnEnviarMensagens');
+            const originalText = btnEnviar.innerHTML;
+            btnEnviar.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
+            btnEnviar.disabled = true;
+
+            try {
+                /*// Obter colunas selecionadas
+                const checkboxes = document.querySelectorAll('#formSelecaoColunas input[type="checkbox"]');
+                const selectedColumns = Array.from(checkboxes)
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => checkbox.value);
+
+                // Criar FormData com os dados
+                const formData = new FormData();
+                formData.append('file', document.getElementById('fileInput').files[0]);
+                formData.append('message_template', document.getElementById('messageTextarea').value);
+                formData.append('selected_columns', JSON.stringify(selectedColumns));*/
+
+                // Obter colunas selecionadas CORRETAMENTE
+                const checkboxes = document.querySelectorAll('#formSelecaoColunas input[type="checkbox"]:checked');
+                const selectedColumns = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+                // Criar FormData corretamente
+                const formData = new FormData();
+                formData.append('file', document.getElementById('fileInput').files[0]);
+                formData.append('message', document.getElementById('messageTextarea').value);
+
+                // Adicionar cada coluna selecionada individualmente
+                selectedColumns.forEach((column, index) => {
+                    formData.append(`selected_columns[${index}]`, column);
+                });
+
+                // Enviar para o backend
+                const response = await fetch('/whatsapp-send-bulk', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) throw new Error(data.message || 'Erro ao enviar mensagens');
+
+                // Sucesso
+                alert(`✅ ${data.message}\nLote: ${data.batch_id}`);
+                location.reload();
+
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('❌ Erro ao enviar mensagens: ' + error.message);
+            } finally {
+                btnEnviar.innerHTML = originalText;
+                btnEnviar.disabled = false;
+            }
+        });
+
+       /* document.getElementById('btnConfirmarEnvio').addEventListener('click', function () {
             alert('Mensagens enviadas! 🚀');
             location.reload();
+        });*/
+    </script>
+@endsection
+
+{{--<script>
+    let previewData = []; // Dados importados do Excel
+    let colunasDisponiveis = []; // Nome das colunas
+
+    // Atualiza a barra de progresso
+    function updateProgress(percent) {
+        const bar = document.getElementById('progressBar');
+        bar.style.width = percent + '%';
+        bar.setAttribute('aria-valuenow', percent);
+    }
+
+    // Troca de passos
+    function goToStep(fromStep, toStep, progressPercent) {
+        document.getElementById(fromStep).style.display = 'none';
+        document.getElementById(fromStep).classList.remove('step-active');
+        document.getElementById(fromStep).classList.add('step-completed');
+
+        document.getElementById(toStep).style.display = 'block';
+        document.getElementById(toStep).classList.remove('step-inactive');
+        document.getElementById(toStep).classList.add('step-active');
+
+        updateProgress(progressPercent);
+    }
+
+    // Função de leitura do arquivo Excel
+    function handleFileSelect(evt) {
+        const file = evt.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = e.target.result;
+            const workbook = XLSX.read(data, {type: 'binary'});
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+
+            if (jsonData.length < 2) {
+                alert('O arquivo precisa ter pelo menos 1 linha de dados.');
+                return;
+            }
+
+            colunasDisponiveis = jsonData[0];
+            previewData = jsonData.slice(1);
+
+            showTablePreview(jsonData);
+
+            document.getElementById('fileName').innerText = file.name;
+            document.getElementById('fileSize').innerText = (file.size / 1024).toFixed(2) + ' KB';
+            document.getElementById('fileDetails').style.display = 'block';
+            document.getElementById('tablePreview').style.display = 'block';
+
+            document.getElementById('btnProximoPasso1').disabled = false;
+        };
+        reader.readAsBinaryString(file);
+    }
+
+    function resetFileInput() {
+        document.getElementById('fileInput').value = '';
+        document.getElementById('fileDetails').style.display = 'none';
+        document.getElementById('tablePreview').style.display = 'none';
+        document.getElementById('btnProximoPasso1').disabled = true;
+    }
+
+    function showTablePreview(data) {
+        const table = document.getElementById('previewTable');
+        table.innerHTML = '';
+
+        data.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            row.forEach(cell => {
+                const tag = index === 0 ? 'th' : 'td';
+                const cellElem = document.createElement(tag);
+                cellElem.textContent = cell ?? '';
+                tr.appendChild(cellElem);
+            });
+            table.appendChild(tr);
         });
-    </script>--}}
+    }
+
+    // Cria CHECKBOX (input + datalist) para cada coluna
+    function gerarCamposSelecao() {
+        const form = document.getElementById('formSelecaoColunas');
+        form.innerHTML = '';
+
+        colunasDisponiveis.forEach(coluna => {
+            const div = document.createElement('div');
+            div.className = 'form-check col-md-4';
+
+            div.innerHTML =
+                <input class="form-check-input" type="checkbox" value="${coluna}" id="coluna-${coluna}">
+                    <label class="form-check-label fw-bold" for="coluna-${coluna}">
+                        ${coluna}
+                    </label>
+                    ;
+                    form.appendChild(div);
+                    });
+                    }
+
+                    // Primeiro debugar o problema para ver o que está acontecendo
+                    console.log('Depurando geração de botões');
+
+                    // 1. Corrigir botões de placeholders
+                    function gerarBotoesPlaceholders(colunasSelecionadas) {
+                    const container = document.getElementById('botoesPlaceholders');
+                    container.innerHTML = '';
+
+                    console.log('Colunas selecionadas:', colunasSelecionadas);
+
+                    colunasSelecionadas.forEach(coluna => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'btn btn-outline-primary btn-sm me-2 mb-2';
+                    // Armazenar apenas o nome da coluna, sem o símbolo +
+                    btn.dataset.placeholder = coluna;
+                    // Usar textContent para evitar interpretação HTML
+                    btn.textContent = '{{' + coluna + '}}';
+
+                    // IMPORTANTE: Função de clique completamente reescrita
+                    btn.onclick = function() {
+                    console.log('Clique em placeholder:', coluna);
+                    // Usar uma string literal direta, sem this.dataset
+                    const placeholder = '{{' + coluna + '}}';
+                    insertAtCursor(document.getElementById('messageTextarea'), placeholder);
+                };
+
+                    container.appendChild(btn);
+                });
+                }
+
+
+                    // Preenche o select de prévia
+                    function gerarPrevia(colunasSelecionadas) {
+                    const selector = document.getElementById('previewSelector');
+                    selector.innerHTML = '<option selected>Selecione um registro para visualizar</option>';
+
+                    previewData.forEach((row, index) => {
+                    const opt = document.createElement('option');
+                    opt.value = index;
+                    opt.textContent = Registro ${index + 1};
+                    selector.appendChild(opt);
+                });
+
+                    selector.addEventListener('change', function() {
+                    const idx = parseInt(this.value);
+                    if (isNaN(idx)) return;
+
+                    const row = previewData[idx];
+                    let msg = document.getElementById('messageTextarea').value;
+                    console.log('Mensagem original:', msg);
+
+                    colunasSelecionadas.forEach(coluna => {
+                    const valorIndice = colunasDisponiveis.indexOf(coluna);
+                    const valor = valorIndice >= 0 && valorIndice < row.length ? row[valorIndice] : '';
+                    console.log(Substituindo  por "${valor}");
+                    // Usar replaceAll com string exata
+                    msg = msg.replaceAll('{{' + coluna + '}}', valor || '');
+                });
+
+                    console.log('Mensagem processada:', msg);
+                    document.getElementById('messagePreview').innerHTML = '<p>' + msg + '</p>';
+                });
+                }
+
+                    // Insere texto no cursor do textarea
+                    function insertAtCursor(textarea, text) {
+                    console.log('Inserindo texto:', text);
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const value = textarea.value;
+
+                    textarea.value = value.substring(0, start) + text + value.substring(end);
+                    textarea.selectionStart = textarea.selectionEnd = start + text.length;
+                    textarea.focus();
+                }
+
+                    // Navegação dos passos
+                    document.getElementById('btnProximoPasso1').addEventListener('click', function() {
+                    gerarCamposSelecao();
+                    goToStep('step1', 'step2', 66);
+                });
+
+                    document.getElementById('btnVoltarPasso2').addEventListener('click', function() {
+                    goToStep('step2', 'step1', 33);
+                });
+
+                    document.getElementById('btnConfirmarSelecao').addEventListener('click', function() {
+                    const checkboxes = document.querySelectorAll('#formSelecaoColunas input[type="checkbox"]');
+                    const colunasSelecionadas = [];
+
+                    checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                    colunasSelecionadas.push(checkbox.value);
+                }
+                });
+
+                    if (colunasSelecionadas.length === 0) {
+                    alert('Selecione pelo menos uma coluna.');
+                    return;
+                }
+
+                    gerarBotoesPlaceholders(colunasSelecionadas);
+                    gerarPrevia(colunasSelecionadas);
+
+                    goToStep('step2', 'step3', 100);
+                    document.getElementById('totalRecipients').innerText = previewData.length;
+                });
+
+                    document.getElementById('btnVoltarPasso3').addEventListener('click', function() {
+                    goToStep('step3', 'step2', 66);
+                });
+
+                    document.getElementById('btnEnviarMensagens').addEventListener('click', function() {
+                    const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+                    modal.show();
+                });
+
+                    document.getElementById('btnConfirmarEnvio').addEventListener('click', function() {
+                    alert('Mensagens enviadas! 🚀');
+                    location.reload();
+                });
+</script>--}}
+

@@ -12,6 +12,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Services\WhatsAppService;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class SendWhatsAppMessageJob implements ShouldQueue
 {
@@ -58,6 +59,7 @@ class SendWhatsAppMessageJob implements ShouldQueue
     public function handle(WhatsAppService $whatsappService)
     {
         try {
+
             // Recupera usuário
             $user = null;
             if ($this->userId) {
@@ -257,7 +259,7 @@ class SendWhatsAppMessageJob implements ShouldQueue
         // Remove caracteres não numéricos
         $cleaned = preg_replace('/[^0-9+]/', '', $number);
 
-        // Regra básica: deve ter pelo menos X dígitos (ajuste conforme seus requisitos)
+        // Regra básica: deve ter pelo menos X dígitos
         if (strlen($cleaned) < 10) {
             return false;
         }

@@ -4,6 +4,35 @@
 window.previewData = window.previewData || [];
 window.colunasDisponiveis = window.colunasDisponiveis || [];
 
+// 4. Função global para manipular arquivo (fileInput)
+window.handleFileSelect = function(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        console.warn('Nenhum arquivo selecionado.');
+        return;
+    }
+
+    console.log('Arquivo selecionado:', file.name);
+
+    // Aqui você coloca sua lógica de processamento do arquivo (por ex: ler CSV, XLSX etc.)
+    // Exemplo básico de só mostrar o nome do arquivo:
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    if (fileNameDisplay) {
+        fileNameDisplay.textContent = 'Arquivo selecionado: ' + file.name;
+    }
+};
+
+// 5. Garantir que o input de arquivo funcione mesmo sem onchange no HTML
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileSelect);
+    } else {
+        console.warn('fileInput não encontrado no DOM. Ignorando listener.');
+    }
+});
+
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM carregado. Inicializando correções para os placeholders.');
 

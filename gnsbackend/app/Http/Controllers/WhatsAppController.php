@@ -3,16 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SendMessageRequest;
-use App\Imports\ContatosImport;
-use App\Jobs\ProcessarEnvioWhatsapp;
 use App\Jobs\SendWhatsAppMessageJob;
 use App\Models\Historic;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Services\WhatsAppService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 
 class WhatsAppController extends Controller
@@ -157,6 +156,247 @@ class WhatsAppController extends Controller
     //==================================//
     public function sendBulkMessages(Request $request)
     {
+        // Forçar resposta JSON em caso de erro
+        $request->headers->set('Accept', 'application/json');
+
+        try {
+            // Validação dos dados
+            $validator = Validator::make($request->all(), [
+                'message' => 'required_without:file',
+                'file' => 'required_without:message|file|mimes:xlsx,xls',
+                'media' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,pdf,docx',
+                'selected_columns' => 'required_if:file,true|array',
+                'selected_columns.*' => 'string'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $token = $this->getUserToken();
+            $userId = auth()->id();
+            $batchId = uniqid();
+            $filePath = $this->handleMediaUpload($request);
+
+            // Determinar o modo de envio
+            if ($request->hasFile('file')) {
+                return $this->processXlsxFile($request, $token, $userId, $batchId, $filePath);
+            } else {
+                return $this->processTraditionalSend($request, $token, $userId, $batchId, $filePath);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro no servidor',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function handleMediaUpload(Request $request): ?string
+    {
+        if (!$request->hasFile('media')) {
+            return null;
+        }
+
+        return $request->file('media')->store('whatsapp-media', 'public');
+    }
+
+    private function processTraditionalSend(Request $request, string $token, int $userId, string $batchId, ?string $filePath)
+    {
+        $message = $request->input('message');
+        $contacts = Historic::whereNotNull('contact')
+            ->where('user_id', $userId)
+            ->get();
+
+        foreach ($contacts as $index => $contact) {
+            SendWhatsAppMessageJob::dispatch(
+                $contact->contact,
+                $message,
+                $token,
+                $filePath,
+                $userId,
+                $batchId
+            )->delay(now()->addSeconds($index * rand(4, 10)));
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mensagens tradicionais enfileiradas com sucesso!',
+            'count' => $contacts->count(),
+            'batch_id' => $batchId
+        ]);
+    }
+
+    private function processXlsxFile(Request $request, string $token, int $userId, string $batchId, ?string $filePath)
+    {
+        $spreadsheet = IOFactory::load($request->file('file'));
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = $sheet->toArray();
+
+        $headers = array_shift($rows);
+        $selectedColumns = $request->input('selected_columns', []);
+        $messageTemplate = $request->input('message', '');
+        $processedCount = 0;
+
+        foreach ($rows as $index => $row) {
+            $contactData = $this->extractContactData($headers, $row, $selectedColumns);
+
+            if ($contactData['contact']) {
+                $processedCount++;
+                SendWhatsAppMessageJob::dispatch(
+                    $contactData['contact'],
+                    $contactData['message'],
+                    $token,
+                    $filePath,
+                    $userId,
+                    $batchId,
+                    $contactData['name']
+                )->delay(now()->addSeconds($index * rand(4, 10)));
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mensagens do arquivo enfileiradas com sucesso!',
+            'count' => $processedCount,
+            'batch_id' => $batchId
+        ]);
+    }
+
+    private function extractContactData(array $headers, array $row, array $selectedColumns): array
+    {
+        $contact = null;
+        $name = null;
+        $message = '';
+
+        foreach ($selectedColumns as $column) {
+            $colIndex = array_search($column, $headers);
+            if ($colIndex !== false && isset($row[$colIndex])) {
+                // Identifica colunas especiais
+                if (preg_match('/(telefone|celular|contato|phone|mobile)/i', $column)) {
+                    $contact = $row[$colIndex];
+                } elseif (preg_match('/(nome|name|contact)/i', $column)) {
+                    $name = $row[$colIndex];
+                }
+
+                // Substitui placeholders
+                $message = str_replace("{{{$column}}}", $row[$colIndex], $message);
+            }
+        }
+
+        return [
+            'contact' => $contact,
+            'name' => $name,
+            'message' => $message
+        ];
+    }
+
+    /*public function sendBulkMessages(Request $request)
+    {
+        // Validação básica para ambos os casos
+        $request->validate([
+            'message' => 'required_without:file',
+            'file' => 'required_without:message|file|mimes:xlsx,xls',
+            'media' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,pdf,docx',
+            'selected_columns' => 'required_if:file,true|array',
+            'selected_columns.*' => 'string' // Valida cada item do array
+        ]);
+
+        $token = $this->getUserToken();
+        $filePath = null;
+        $userId = auth()->id();
+        $batchId = uniqid();
+
+        // Upload de mídia (se aplicável a ambos os casos)
+        if ($request->hasFile('media')) {
+            $file = $request->file('media');
+            $filePath = $file->store('whatsapp-media', 'public');
+        }
+
+        // Caso 1: Envio tradicional (usando histórico)
+        if ($request->has('message') && !$request->hasFile('file')) {
+            $message = $request->input('message');
+            $contacts = Historic::whereNotNull('contact')
+                ->where('user_id', $userId)
+                ->get();
+
+            foreach ($contacts as $index => $contact) {
+                SendWhatsAppMessageJob::dispatch(
+                    $contact->contact,
+                    $message,
+                    $token,
+                    $filePath,
+                    $userId,
+                    $batchId
+                )->delay(now()->addSeconds($index * rand(4, 10)));
+            }
+
+            return redirect()->back()->with('success', 'Mensagens em massa enviadas com sucesso!');
+        }
+
+        // Caso 2: Envio via XLSX
+        if ($request->hasFile('file')) {
+            try {
+                $spreadsheet = IOFactory::load($request->file('file'));
+                $sheet = $spreadsheet->getActiveSheet();
+                $rows = $sheet->toArray();
+
+                $headers = array_shift($rows);
+                $selectedColumns = $request->input('selected_columns', []);
+                $messageTemplate = $request->input('message', '');
+
+                foreach ($rows as $index => $row) {
+                    $contact = null;
+                    $message = $messageTemplate;
+                    $placeholders = [];
+
+                    // Processar cada coluna selecionada
+                    foreach ($selectedColumns as $column) {
+                        $colIndex = array_search($column, $headers);
+                        if ($colIndex !== false && isset($row[$colIndex])) {
+                            // Identifica a coluna de contato
+                            if (stripos($column, 'tel') !== false || stripos($column, 'cel') !== false || stripos($column, 'contato') !== false) {
+                                $contact = $row[$colIndex];
+                            }
+                            // Substitui placeholders
+                            $message = str_replace("{{{$column}}}", $row[$colIndex], $message);
+                        }
+                    }
+
+                    if ($contact) {
+                        SendWhatsAppMessageJob::dispatch(
+                            $contact,
+                            $message,
+                            $token,
+                            $filePath,
+                            $userId,
+                            $batchId,
+                            $row[0] ?? null // Primeira coluna como nome
+                        )->delay(now()->addSeconds($index * rand(4, 10)));
+                    }
+                }
+
+                return redirect()->back()->with('success', count($rows) . ' mensagens do arquivo enfileiradas com sucesso!');
+
+            } catch (\Exception $e) {
+                return back()->with('error', 'Erro ao processar arquivo: ' . $e->getMessage());
+            }
+        }
+
+        return back()->with('error', 'Nenhum método de envio selecionado');
+    }*/
+
+    /*private function getUserToken()
+    {
+        return auth()->user()->remember_token;
+    }*/
+    /*public function sendBulkMessages(Request $request)
+    {
         $message = $request->input('message');
         $token = $this->getUserToken();
         $filePath = null;
@@ -181,7 +421,7 @@ class WhatsAppController extends Controller
         }
 
         return redirect()->back()->with('success', 'Mensagens enviadas com sucesso!');
-    }
+    }*/
 
     public function dashboard()
     {
