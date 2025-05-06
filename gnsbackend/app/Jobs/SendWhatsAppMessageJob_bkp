@@ -1,0 +1,216 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\User;
+use App\Models\Historic;
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use App\Services\WhatsAppService;
+use Throwable;
+
+class SendWhatsAppMessageJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    protected $contact;
+    protected $message;
+    protected $token;
+    protected $media;
+    protected $userId;
+
+    public function __construct($contact, $message, $token, $media = null, $userId = null)
+    {
+        $this->contact = $contact;
+        $this->message = $message;
+        $this->token = $token;
+        $this->media = $media;
+        $this->userId = $userId;
+    }
+
+    protected $tries = 3;
+    protected $backoff = [30, 60, 120];
+
+    public function handle(WhatsAppService $whatsappService)
+    {
+        try {
+            \Log::info('Sá peste veio aqui karai');
+
+            $user = null;
+            if ($this->userId) {
+                $user = User::find($this->userId);
+            } elseif ($this->token) {
+                $user = User::where('remember_token', $this->token)->first();
+            }
+
+            if (!$user) {
+                \Log::warning('Usuário não encontrado ao enviar mensagem WhatsApp', [
+                    'token' => $this->token,
+                    'userId' => $this->userId
+                ]);
+
+                $this->saveHistoric(null, $this->contact['number'], 'error', 'Usuário não encontrado', 'auth_error');
+                return;
+            }
+
+            // Validação básica do número de telefone
+            if (!$this->isValidPhoneNumber($this->contact['number'])) {
+                \Log::warning('Número de telefone inválido: ' . $this->contact['number'], [
+                    'userId' => $this->userId
+                ]);
+
+                $this->saveHistoric($user->id, $this->contact['number'], 'error', null, 'invalid_number');
+                return;
+            }
+
+            // Verifica se mudou o mês (antes de qualquer envio)
+            if ($user->lastMessage) {
+                $lastMsgMonth = Carbon::parse($user->lastMessage)->format('Y-m');
+                $currentMonth = now()->format('Y-m');
+
+                if ($lastMsgMonth !== $currentMonth) {
+                    $mensagensSobraram = max($user->msgLimit - $user->sendedMsg, 0);
+                    $user->msgLimit += $mensagensSobraram;
+                    $user->sendedMsg = 0;
+                    $user->save();
+                }
+            }
+
+            // Verifica limite antes de enviar
+            if ($user->sendedMsg >= $user->msgLimit) {
+                \Log::warning('Limite de mensagens excedido para o usuário', [
+                    'userId' => $user->id,
+                    'sent' => $user->sendedMsg,
+                    'limit' => $user->msgLimit
+                ]);
+
+                $this->saveHistoric($user->id, $this->contact['number'], 'error', null, 'limit_exceeded');
+                return;
+            }
+
+            // Substitui os placeholders na mensagem
+            $finalMessage = str_replace('{{nome}}', $this->contact['name'], $this->message);
+
+            // Envia a mensagem (passando apenas o número)
+            $response = $whatsappService->sendMessage(
+                $this->contact['number'],
+                $finalMessage,
+                $this->media,
+                $this->token
+            );
+
+            if ($response->successful()) {
+                \Log::info('Mensagem WhatsApp enviada com sucesso', [
+                    'contact' => $this->contact['number'],
+                    'userId' => $user->id
+                ]);
+
+                $this->saveHistoric($user->id, $this->contact['number'], 'success');
+
+                // Atualiza lastMessage e contador
+                $user->sendedMsg++;
+                $user->lastMessage = now();
+                $user->save();
+            } else {
+                $errorMessage = $response->json('error.message') ?? 'Erro desconhecido';
+                $errorCode = $response->json('error.code') ?? 'Sem código';
+
+                \Log::error('Erro ao enviar mensagem WhatsApp', [
+                    'contact' => $this->contact['number'],
+                    'errorCode' => $errorCode,
+                    'errorMessage' => $errorMessage,
+                    'status' => $response->status()
+                ]);
+
+                $this->saveHistoric(
+                    $user->id,
+                    $this->contact['number'],
+                    'error',
+                    null,
+                    $this->getErrorTypeFromCode($errorCode, $response->status())
+                );
+            }
+
+        } catch (Exception $e) {
+            \Log::error('Erro ao processar job de WhatsApp: ' . $e->getMessage(), [
+                'contact' => $this->contact['number'],
+                'exception' => $e
+            ]);
+
+            if ($this->userId) {
+                $this->saveHistoric($this->userId, $this->contact['number'], 'error', null, 'exception');
+            }
+        }
+    }
+
+    protected function saveHistoric($userId, $contact, $status, $name = null, $errorType = null)
+    {
+        try {
+            Historic::create([
+                'user_id' => $userId,
+                'contact' => $contact,
+                'status' => $status,
+                'name' => $name,
+                'errorType' => $errorType
+            ]);
+        } catch (Exception $e) {
+            \Log::error('Erro ao salvar histórico: ' . $e->getMessage());
+        }
+    }
+
+    protected function getErrorTypeFromCode($errorCode, $httpStatus)
+    {
+        $errorMapping = [
+            'invalid_number' => 'invalid_number',
+            'auth_error' => 'auth_error',
+            'message_timed_out' => 'timeout',
+            'rate_limit' => 'rate_limit'
+        ];
+
+        $httpMapping = [
+            401 => 'auth_error',
+            403 => 'forbidden',
+            404 => 'not_found',
+            429 => 'rate_limit',
+            500 => 'server_error',
+            502 => 'server_error',
+            503 => 'server_error',
+            504 => 'timeout'
+        ];
+
+        if (isset($errorMapping[$errorCode])) {
+            return $errorMapping[$errorCode];
+        }
+
+        if (isset($httpMapping[$httpStatus])) {
+            return $httpMapping[$httpStatus];
+        }
+
+        return 'unknown_error';
+    }
+
+    protected function isValidPhoneNumber($number)
+    {
+        $cleaned = preg_replace('/[^0-9+]/', '', $number);
+        return strlen($cleaned) >= 10;
+    }
+
+    protected function shouldRetryError($errorCode, $httpStatus)
+    {
+        $temporaryErrors = [
+            'temporary_error',
+            'rate_limit_exceeded',
+            'internal_server_error'
+        ];
+
+        $temporaryHttpStatus = [429, 500, 502, 503, 504];
+
+        return in_array($errorCode, $temporaryErrors) ||
+            in_array($httpStatus, $temporaryHttpStatus);
+    }
+}
