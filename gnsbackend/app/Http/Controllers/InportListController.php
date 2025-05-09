@@ -16,8 +16,8 @@ class InportListController extends Controller
     public function index()
     {
         $contatos = Historic::where('user_id', auth()->id())
-        ->latest()
-        ->get();
+            ->latest()
+            ->get();
 
         return view('pages.from-sheet', compact('contatos'));
     }
@@ -25,19 +25,46 @@ class InportListController extends Controller
     // Enviar mensagem em massa para a lista
     public function enviaMensagemEmMassaLista(Request $request)
     {
+        //Recupera o template do array para salvar no DB
+        $tpl = $request->template;
+
+        //===================================================//
+        // Verifica se tem o template no array
+        //==================================================//
+        if (isset($tpl)) {
+            \Log::info('Salvando o template como última mensagem');
+
+            //Salva o template no Array
+            auth()->user()->update([
+                'lastMessage' => $tpl
+            ]);
+
+            //Retira a key template do array
+            unset($request['template']);
+
+            \Log::info("Array agora está sem o template");
+        } else {
+            \Log::info('Deu Ruim, não achei o template');
+
+            //Retorna uma mensagem avisando que não há mensagem no request
+            return response()->json(['message' => 'Você não digitou a mensagem']);
+        }
+
+        \Log::info('Dando continuídade ao código...');
+
         $verifica = new ArrayDataDetector();
         $contatos = $request->contacts;
         $contatosF = [];
         $contatosFinais = [];
         $erros = $this->verificaContatos($contatos);
 
-        foreach($contatos as $contato){
+        foreach ($contatos as $contato) {
             $contatosF[] = $contato;
         }
 
         $result = $verifica->extractContacts($contatosF)['contacts'];
 
-        foreach ($result as $re){
+        foreach ($result as $re) {
             $phoneWithSuffix = $re['phone'];
             if (!str_contains($phoneWithSuffix, '@c.us')) {
                 $phoneWithSuffix .= '@c.us';
@@ -50,18 +77,21 @@ class InportListController extends Controller
             ];
         }
 
-        MensagensEmMassaJob::dispatch(
+        //\Log::info($contatos);
+
+        /*MensagensEmMassaJob::dispatch(
             $contatosFinais,
             token_user(),
             auth()->id(),
             $erros
-        );
+        );*/
 
         return response()->json(['message' => 'Mensagens sendo executadas...']);
     }
 
 
-    private function verificaContatos($arrayContatos){
+    private function verificaContatos($arrayContatos)
+    {
         $verifica = new ArrayDataDetector();
         $contatosVerificados = $verifica->extractContacts($arrayContatos);
 
@@ -94,30 +124,4 @@ class InportListController extends Controller
         return redirect()->route('page.from.sheet')->with('success', 'Lista salva com sucesso!');
     }
 
-    /*public function uploadSheet(Request $request)
-    {
-        $request->validate([
-            'csv_file' => 'required|file|mimes:csv,xlsx,xls,xml,ods|max:2048',
-        ]);
-
-        $file = $request->file('csv_file');
-
-        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $extension = strtolower($file->getClientOriginalExtension());
-        $filename = Str::slug($originalName) . '_' .time() . '.' . $extension;
-
-        $path = $file->storeAs('uploads', $filename);
-
-        $importador = new ContatosImport();
-
-        if ($extension === 'csv') {
-            Excel::import($importador, storage_path('app/' . $path), ExcelFormat::CSV);
-        } else {
-            Excel::import($importador, storage_path('app/' . $path));
-        }
-
-        $dados = $importador->dados;
-
-        return redirect()->route('page.from.sheet', [$dados])->with('success', 'Lista salva com sucesso!');
-    }*/
 }

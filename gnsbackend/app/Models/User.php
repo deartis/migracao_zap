@@ -46,13 +46,10 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'enabled' => 'boolean',
+            'email_verified_at' => 'datetime',
+           'enabled' => 'boolean',
             'rightNumber' => 'boolean',
-            'lastMessage' => 'datetime',
         ];
     }
-
-    // Remova também o método getRouteKeyName se não for mais necessário
 }
