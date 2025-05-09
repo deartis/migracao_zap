@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Imports\ContatosImport;
+use App\Jobs\MensagensEmMassaJob;
 use App\Models\Historic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Excel as ExcelFormat;
+use App\Services\ArrayDataDetector;
 
 class InportListController extends Controller
 {
@@ -18,6 +20,52 @@ class InportListController extends Controller
         ->get();
 
         return view('pages.from-sheet', compact('contatos'));
+    }
+
+    // Enviar mensagem em massa para a lista
+    public function enviaMensagemEmMassaLista(Request $request)
+    {
+        $verifica = new ArrayDataDetector();
+        $contatos = $request->contacts;
+        $contatosF = [];
+        $contatosFinais = [];
+        $erros = $this->verificaContatos($contatos);
+
+        foreach($contatos as $contato){
+            $contatosF[] = $contato;
+        }
+
+        $result = $verifica->extractContacts($contatosF)['contacts'];
+
+        foreach ($result as $re){
+            $phoneWithSuffix = $re['phone'];
+            if (!str_contains($phoneWithSuffix, '@c.us')) {
+                $phoneWithSuffix .= '@c.us';
+            }
+
+            $contatosFinais[] = [
+                'name' => $re['name'],
+                'number' => $phoneWithSuffix,
+                'message' => $re['metadata']['message'],
+            ];
+        }
+
+        MensagensEmMassaJob::dispatch(
+            $contatosFinais,
+            token_user(),
+            auth()->id(),
+            $erros
+        );
+
+        return response()->json(['message' => 'Mensagens sendo executadas...']);
+    }
+
+
+    private function verificaContatos($arrayContatos){
+        $verifica = new ArrayDataDetector();
+        $contatosVerificados = $verifica->extractContacts($arrayContatos);
+
+        return $contatosVerificados;
     }
 
     public function uploadSheet(Request $request)

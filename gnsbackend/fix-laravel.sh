@@ -6,6 +6,7 @@ php artisan config:clear
 php artisan cache:clear
 php artisan view:clear
 php artisan route:clear
+php artisan queue:clear 
 php artisan optimize
 
 # composer dump-autoload

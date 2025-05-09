@@ -10,6 +10,32 @@ class ContatosImport implements ToCollection
 {
     public function collection(Collection $rows)
     {
+
+        // Remove cabeçalho, se tiver — você pode pular essa parte se já trata cabeçalho fora
+        // $rows = $rows->slice(1);
+
+        $cleanRows = $rows->filter(function ($row) {
+            // Limpa cada célula da linha
+            $cleanedRow = $row->map(function ($value) {
+                if (is_null($value)) return null;
+
+                // Remove _x000D_ e espaços extras
+                $cleaned = trim(str_replace('_x000D_', '', $value));
+
+                // Se depois de limpar ficou vazio, vira null
+                return $cleaned === '' ? null : $cleaned;
+            });
+
+            // Só mantém a linha se tiver algum valor útil (não tudo null)
+            return $cleanedRow->filter()->isNotEmpty();
+        })->values(); // reindexa o array (fica 0,1,2...)
+
+        // Aqui você chama o processamento (Job, Controller, etc)
+        foreach ($cleanRows as $row) {
+            // Exemplo: dispatch(new ProcessContactJob($row));
+            logger()->info('Linha limpa:', $row->toArray());
+        }
+
         if ($rows->isEmpty()) {
             session()->flash('error', 'O arquivo está vazio.');
             return;
@@ -202,7 +228,7 @@ class ContatosImport implements ToCollection
         }
 
         return $result;
-    }
+    }                                                                                                                                                                                                                                                                                                                                                                                                                                                           
 
     /**
      * Pontua um valor quanto à probabilidade de ser um telefone

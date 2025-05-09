@@ -23,3 +23,11 @@ if(!function_exists('uniqName')){
         return $nomeFormatado;
     }
 }
+
+if(!function_exists('token_user')){
+    function token_user()
+    {
+        $token = auth()->id();
+        return $token;
+    }
+}

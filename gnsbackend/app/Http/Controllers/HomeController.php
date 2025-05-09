@@ -10,7 +10,7 @@ class HomeController extends Controller
     public function index()
     {
         //orderBy('created_at', 'desc')->paginate(10);
-        $historico = Historic::where('user_id', auth()->id())->paginate(10);
+        $historico = Historic::where('user_id', auth()->id())->paginate(5);
         $user = auth()->user();
 
         //dd(auth()->id());

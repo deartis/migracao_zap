@@ -81,7 +81,7 @@
                                     -
                                 @endif
                             </td>
-                            <td>{{ \Carbon\Carbon::parse($envio->created_at)->format('d/m/Y H:i') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($envio->updated_at)->format('d/m/Y H:i') }}</td>
                         </tr>
                     @empty
                         <tr>
