@@ -31,3 +31,25 @@ if(!function_exists('token_user')){
         return $token;
     }
 }
+
+if(!function_exists('verificaStatusUser')){
+    function verificaStatusUser(): array
+    {
+        $user = auth()->user();
+        $msgLimit = $user->msgLimit;
+        $sendedMsg = $user->sendedMsg;
+        $hasLimit = $msgLimit >= $sendedMsg;
+        $percent = ($sendedMsg / $msgLimit)*100;
+        $percent = intval($percent);
+        $enabled = $user->enabled;
+
+        return [
+            'msgLimit' => $msgLimit,
+            'sendedMsg' => $sendedMsg,
+            'hasLimit' => $hasLimit,
+            'percent' => $percent,
+            'enabled'  => $enabled,
+            'userm' => $user,
+        ];
+    }
+}

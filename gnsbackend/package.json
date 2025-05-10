@@ -3,7 +3,9 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "queue:watch": "nodemon --watch app/ --watch config/ --ext php --exec \"php artisan queue:work\"",
+        "log:monitor": "php log-watcher.php storage/logs/laravel.log"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
