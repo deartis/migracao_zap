@@ -47,6 +47,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/page/from-sheet',[InportListController::class, 'index'])->name('page.from.sheet');
     //Route::post('/page/from-sheet',[InportListController::class, 'uploadSheet'])->name('upload.sheet');
     Route::post('/envia-mensagem-em-massa-lista', [InportListController::class, 'enviaMensagemEmMassaLista'])->name('mensagem.em.massa.lista');
+    Route::get('/get-tpl', [InportListController::class, 'getTemplate']);
+    Route::get('/envio-progresso', [InportListController::class, 'envioProgresso']);
+    Route::post('/reseta-progresso', [InportListController::class, 'resetaProgresso']);
+
+
 
     Route::get('/page/multiple-msg',[MultipleContactMsgController::class, 'index'])->name('page.multi.msg');
     Route::get('/dashboard', [WhatsAppController::class, 'dashboard'])->name('dashboard');

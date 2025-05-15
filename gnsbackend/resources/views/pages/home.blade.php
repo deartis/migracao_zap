@@ -35,7 +35,7 @@
                     <h5 class="card-title mb-4">Erros de Envio</h5>
                     <div class="chart-container">
                         <canvas id="errorsChart"></canvas>
-                        <div class="chart-label">02</div>
+                        <div class="chart-label">{{$totalErros}}</div>
                     </div>
                 </div>
             </div>
@@ -47,7 +47,7 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="card-title">Últimas Movimentações</h5>
-                <a href="#" class="text-success">Mais...</a>
+                <a href="{{ route('page.historic') }}" class="text-success">Mais...</a>
             </div>
             <div class="table-actions table-responsive">
                 <table class="table table-hover">
@@ -67,7 +67,7 @@
                             <td>{{ $envio->id }}</td>
                             <td>{{ $envio->contact }}</td>
                             <td>
-                                @if($envio->status === 'enviado')
+                                @if($envio->status === 'success')
                                     <span class="badge bg-success">Enviado</span>
                                 @else
                                     <span class="badge bg-danger">Não Enviado</span>
@@ -76,7 +76,7 @@
                             <td>{{ $envio->name ?? '-' }}</td>
                             <td>
                                 @if($envio->errorType)
-                                    <span class="text-danger">{{ $envio->errorType }}</span>
+                                    <span class="text-danger">{{ $envio->errorType=='invalid_number'?'Número inválido': $envio->errorType}}</span>
                                 @else
                                     -
                                 @endif
@@ -109,5 +109,6 @@
 @push('scriptvar')
     <script>
         window.usoPacote = "{{ $usoPacoteCiclo }}";
+        window.totalErros = "{{ $totalErros }}";
     </script>
 @endpush

@@ -20,7 +20,7 @@
     <ul class="nav flex-column">
         <li class="nav-item" data-title="Envio em massa xls/csv">
             <a class="nav-link" href="{{ route('page.from.sheet') }}">
-                <i class="bi bi-person-lines-fill me-2 text-success"></i> <span>Envio em Massa xls/csv</span>
+                <i class="bi bi-person-lines-fill me-2 text-success"></i> <span>Envio em Massa xlsx/csv</span>
             </a>
         </li>
         <li class="nav-item" data-title="Envio em massa contatos telefone">

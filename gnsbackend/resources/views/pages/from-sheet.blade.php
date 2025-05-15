@@ -175,6 +175,10 @@
                                   placeholder="Digite sua mensagem aqui. Use os placeholders abaixo para personalizar para cada destinatário."></textarea>
                     </div>
 
+                    <div class="mb-3">
+                        <button class="btn btn-info" id="btnCarregarTemplate">Carregar Mensagem</button>
+                    </div>
+
                     <div class="card mb-4">
                         <div class="card-header bg-light">
                             <h5 class="mb-0">Placeholders Disponíveis</h5>
@@ -238,11 +242,41 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="modalEnvio" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content text-center">
+                            <div class="modal-body">
+                                <h5 class="modal-title mb-3">Enviando mensagens...</h5>
+                                <p id="progressoTexto">0 de 0</p>
+                                <div class="progress" style="height: 25px;">
+                                    <div id="barraProgresso" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;">
+                                        0%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
 
 @endsection
+
+{{--@section('scripts')
+    <script>
+        function carregaTemplate() {
+            fetch('/get-tpl')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('messageTextarea').value = data.template;
+                });
+        }
+    </script>
+@endsection--}}
 
 
 

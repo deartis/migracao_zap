@@ -329,6 +329,11 @@ app.post(
   },
 );
 
+// Rota para buscar os contatos do usuário
+app.get('/contatos', async (req, res) => {
+  
+});
+
 // Saúde do servidor
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });

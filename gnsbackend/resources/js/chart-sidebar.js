@@ -1,6 +1,5 @@
 import Chart from 'chart.js/auto';
 // Toggle sidebar on desktop
-console.log(window.whatsappApiUrl);
 document.querySelector('.menu-toggle').addEventListener('click', function () {
     document.querySelector('.sidebar').classList.toggle('collapsed');
     document.querySelector('.main-content').classList.toggle('expanded');
@@ -75,4 +74,4 @@ createDonutChart('usageChart', window.usoPacote, ['#0dcaf0', '#e9ecef']);
 createDonutChart('messagesChart', window.usoPacote, ['#20c997', '#e9ecef']);
 
 // Errors Chart - 2 errors
-createDonutChart('errorsChart', 2, ['#dc3545', '#e9ecef']);
+createDonutChart('errorsChart', window.totalErros, ['#dc3545', '#e9ecef']);

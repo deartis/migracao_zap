@@ -230,6 +230,21 @@
             z-index: 1001;
         }
 
+        .destaque-checkbox {
+            border: 2px solid #28a745 !important; /* Verde do Bootstrap */
+            box-shadow: 0 0 3px #28a745;
+            border-radius: 4px;
+            width: 1.2em;
+            height: 1.2em;
+            margin-top: 4px;
+        }
+
+        .destaque-checkbox:checked {
+            background-color: #28a745;
+            border-color: #1e7e34;
+        }
+
+
     </style>
     @yield('styles');
 </head>

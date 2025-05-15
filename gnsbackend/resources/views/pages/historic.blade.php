@@ -52,10 +52,10 @@
                             <td>{{ $item->name }}</td>
                             <td>{{ $item->contact }}</td>
                             <td>
-                                @if($item->status === 'enviado')
+                                @if($item->status === 'success')
                                     <span class="badge bg-success">Enviado</span>
                                 @else
-                                    <span class="badge bg-danger">Erro</span>
+                                    <span class="badge bg-danger">Não enviado</span>
                                 @endif
                             </td>
                             <td>{{ $item->errorType ?? '-' }}</td>
@@ -68,6 +68,9 @@
                     @endforelse
                     </tbody>
                 </table>
+                <div class="d-flex justify-content-center mt-3">
+                    {{ $historico->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         </div>
     </div>
