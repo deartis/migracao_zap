@@ -10,6 +10,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/chart-sidebar.js',
                 'resources/js/fix-placeholders.js',
+                'resources/js/msgmassacontatos.js',
             ],
             refresh: true,
         }),

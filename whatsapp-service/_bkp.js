@@ -32,6 +32,24 @@ app.use(
 // Armazenamento para clientes conectados por usuário/token
 const clients = new Map();
 
+// Verifica se o cliente está inicializado e pronto
+const checkClient = (req, res, next) => {
+  const userToken = req.headers.authorization;
+
+  if (!userToken) {
+    return res.status(401).json({ status: false, message: "Token não fornecido" });
+  }
+
+  const client = clients.get(userToken);
+  if (!client) {
+    return res.status(404).json({ status: false, message: "Cliente não inicializado" });
+  }
+
+  req.client = client;
+  req.userToken = userToken;
+  next();
+};
+
 // Função para obter ou criar cliente WhatsApp para um token específico
 function getClientForUser(token) {
   if (!clients.has(token)) {
@@ -329,36 +347,107 @@ app.post(
   },
 );
 
-// Rota para listar contatos
-app.get("/contacts", extractToken, async (req, res) => {
-  console.log(req.token);
+/*
+// Rota para buscar os contatos do usuário
+app.get("/contatos", checkClient, async (req, res) => {
   try {
-    const token = req.token;
-    const clientData = clients.get(token);
+    const client = req.client;
+    const filtro = req.query.filtro || "";
 
-    if (!clientData || clientData.status !== "connected") {
-      return res.status(400).json({ error: "WhatsApp não conectado" });
+    // Verifica se o cliente está pronto
+    if (!client.isReady) {
+      return res.status(400).json({
+        status: false,
+        message: "Cliente WhatsApp ainda não está totalmente inicializado"
+      });
     }
 
-    const contacts = await clientData.client.getContacts();
+    // Tenta obter os chats em vez dos contatos diretamente
+    const chats = await client.getChats();
+    if (!chats) {
+      return res.status(500).json({
+        status: false,
+        message: "Não foi possível obter os chats"
+      });
+    }
 
-    // Filtra contatos válidos (que têm número de telefone)
-    const formattedContacts = contacts
-        .filter((contact) => contact.id && contact.name)
-        .map((contact) => ({
-          name: contact.name || contact.pushname || contact.number,
-          number: contact.id.user,
-          isGroup: contact.isGroup,
-          id: contact.id._serialized,
-        }))
-        .filter(contact => !contact.isGroup); // Opcional: ignora grupos
+    // Extrai contatos dos chats
+    const contatosMap = new Map();
 
-    return res.json({ contacts: formattedContacts });
+    for (const chat of chats) {
+      // Ignora chats sem contato
+      if (!chat.contact) continue;
+
+      const contato = chat.contact;
+      const id = contato.id._serialized;
+
+      // Evita duplicatas
+      if (!contatosMap.has(id)) {
+        contatosMap.set(id, {
+          id: id,
+          nome: contato.name || contato.pushname || "Sem nome",
+          numero: contato.number || "",
+          ehGrupo: contato.isGroup || false,
+          foto: null // Preenchemos as fotos depois se necessário
+        });
+      }
+    }
+
+    // Converte o Map para Array
+    let contatosFiltrados = Array.from(contatosMap.values());
+
+    // Aplica o filtro se fornecido
+    if (filtro) {
+      contatosFiltrados = contatosFiltrados.filter(contato => {
+        return (
+            (contato.nome && contato.nome.toLowerCase().includes(filtro.toLowerCase())) ||
+            (contato.numero && contato.numero.includes(filtro))
+        );
+      });
+    }
+
+    // Limita o número de contatos para evitar sobrecarga
+    const contatosLimitados = contatosFiltrados.slice(0, 100);
+
+    res.json({
+      status: true,
+      message: "Contatos obtidos com sucesso",
+      contatos: contatosLimitados,
+      total: contatosFiltrados.length,
+      exibindo: contatosLimitados.length
+    });
   } catch (error) {
-    console.error("Erro ao buscar contatos:", error);
-    res.status(500).json({ error: error.message });
+    console.error("Erro ao obter contatos:", error);
+    res.status(500).json({
+      status: false,
+      message: "Erro ao obter contatos: " + error.message,
+      error: error.stack
+    });
   }
 });
+*/
+
+// Exemplo usando Express
+app.get('/contatos', async (req, res) => {
+  try {
+    const client = req.client;
+    const contatos = await client.getContacts();
+
+    // Filtra somente contatos válidos com nome ou número
+    const lista = contatos
+        .filter(c => c.isUser) // ignora grupos
+        .map(c => ({
+          id: c.id._serialized,
+          name: c.name || c.pushname || c.number,
+          number: c.number
+        }));
+
+    res.json(lista);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar contatos' });
+  }
+});
+
 
 
 // Saúde do servidor

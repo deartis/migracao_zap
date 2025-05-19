@@ -50,6 +50,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/get-tpl', [InportListController::class, 'getTemplate']);
     Route::get('/envio-progresso', [InportListController::class, 'envioProgresso']);
     Route::post('/reseta-progresso', [InportListController::class, 'resetaProgresso']);
+    Route::post('/envia-mensagem-em-massa-contstos', [MultipleContactMsgController::class, 'enviaMensagemContatosWhatsapp']);
 
 
 

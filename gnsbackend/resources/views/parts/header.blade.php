@@ -1,6 +1,6 @@
 <div class="row mb-4 align-items-center">
     <div
-        class="whatsapp-global-status bg-white rounded shadow-sm d-flex justify-content-between align-items-center p-1 w-100">
+        class="whatsapp-global-status rounded shadow-sm d-flex justify-content-between align-items-center p-1 w-100">
         <!-- Título à esquerda -->
         <div>
             <div class="menu-toggle">

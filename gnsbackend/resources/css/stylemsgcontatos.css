@@ -1,0 +1,57 @@
+.contato-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.contato-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    color: #6c757d;
+    font-weight: bold;
+}
+
+.contato-info {
+    flex-grow: 1;
+}
+
+.contato-nome {
+    font-weight: 500;
+    margin-bottom: 0;
+}
+
+.contato-numero {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+#contatos-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+
+#contatos-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#contatos-wrapper::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+/* Esconde o input file original */
+.input-file-hidden {
+    display: none;
+}
+
+/* Estilo para o nome do arquivo selecionado */
+#file-chosen {
+    margin-left: 10px;
+    font-style: italic;
+}

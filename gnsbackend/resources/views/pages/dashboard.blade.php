@@ -1,5 +1,4 @@
 @extends('layout.app')
-
 @section('content')
     <div class="container mt-5">
         <h2 class="mb-4 text-center fw-bold">📊 Registro de Envio de Mensagens</h2>

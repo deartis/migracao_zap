@@ -1,88 +1,7 @@
 @extends('layout.app')
 @section('styles')
     <style>
-        .step-container {
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .step-active {
-            box-shadow: 0 0 15px rgba(0, 123, 255, 0.2);
-        }
-
-        .step-inactive {
-            opacity: 0.7;
-        }
-
-        .step-completed {
-            border-left: 5px solid #28a745;
-        }
-
-        .step-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .step-number {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: #f8f9fa;
-            color: #6c757d;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-            font-weight: bold;
-        }
-
-        .step-active .step-number {
-            background-color: #0d6efd;
-            color: white;
-        }
-
-        .step-completed .step-number {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .placeholder-badge {
-            cursor: pointer;
-            margin: 5px;
-            transition: all 0.2s;
-        }
-
-        .placeholder-badge:hover {
-            transform: translateY(-2px);
-        }
-
-        #fileDropArea {
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            padding: 25px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        #fileDropArea:hover {
-            border-color: #0d6efd;
-            background-color: rgba(13, 110, 253, 0.05);
-        }
-
-        #fileInput {
-            display: none;
-        }
-
-        .preview-container {
-            max-height: 250px;
-            overflow-y: auto;
-            overflow-x: scroll;
-            margin-top: 15px;
-        }
+        
     </style>
 @endsection
 @section('content')
@@ -93,9 +12,8 @@
 
                 <!-- Barra de progresso -->
                 <div class="progress mb-4" style="height: 10px;">
-                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
-                         role="progressbar" style="width: 33%;" aria-valuenow="33" aria-valuemin="0"
-                         aria-valuemax="100"></div>
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                        style="width: 33%;" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
 
                 <!-- 1️⃣ Importação de Arquivo XLSX -->
@@ -109,7 +27,7 @@
                         <i class="bi bi-file-earmark-excel fs-1 text-success mb-3"></i>
                         <h5>Clique aqui para buscar um arquivo</h5>
                         <p class="text-muted">Formatos suportados: .xlsx, .xls, .csv</p>
-                        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" onchange="handleFileSelect(event)"/>
+                        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" />
                     </div>
 
                     <div id="fileDetails" class="alert alert-success mt-3" style="display: none;">
@@ -172,7 +90,7 @@
                     <div class="mb-3">
                         <label for="messageTextarea" class="form-label fw-bold">Mensagem em Massa:</label>
                         <textarea id="messageTextarea" class="form-control" rows="8"
-                                  placeholder="Digite sua mensagem aqui. Use os placeholders abaixo para personalizar para cada destinatário."></textarea>
+                            placeholder="Digite sua mensagem aqui. Use os placeholders abaixo para personalizar para cada destinatário."></textarea>
                     </div>
 
                     <div class="mb-3">
@@ -226,7 +144,7 @@
                             <div class="modal-header bg-warning text-dark">
                                 <h5 class="modal-title">Confirmar Envio</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
+                                    aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <p>Você está prestes a enviar mensagens para <strong id="totalRecipients">0</strong>
@@ -244,14 +162,17 @@
                 </div>
 
                 <!-- Modal -->
-                <div class="modal fade" id="modalEnvio" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal fade" id="modalEnvio" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+                    data-bs-keyboard="false">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content text-center">
                             <div class="modal-body">
                                 <h5 class="modal-title mb-3">Enviando mensagens...</h5>
                                 <p id="progressoTexto">0 de 0</p>
                                 <div class="progress" style="height: 25px;">
-                                    <div id="barraProgresso" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;">
+                                    <div id="barraProgresso"
+                                        class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                        style="width: 0%;">
                                         0%
                                     </div>
                                 </div>
@@ -263,10 +184,9 @@
             </div>
         </div>
     </div>
-
 @endsection
 
-{{--@section('scripts')
+{{-- @section('scripts')
     <script>
         function carregaTemplate() {
             fetch('/get-tpl')
@@ -276,7 +196,4 @@
                 });
         }
     </script>
-@endsection--}}
-
-
-
+@endsection --}}
