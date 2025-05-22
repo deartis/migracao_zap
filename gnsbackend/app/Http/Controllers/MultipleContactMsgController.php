@@ -27,7 +27,6 @@ class MultipleContactMsgController extends Controller
 
     public function enviaMensagemContatosWhatsapp(Request $request)
     {
-        Log::info($request->all());
         $request->validate([
             'mensagem' => 'required|string',
             'contatos' => 'required|array|min:1',
@@ -42,10 +41,12 @@ class MultipleContactMsgController extends Controller
                 'contatos.*.numero.required' => 'Número do contato é obrigatório',
             ]);
 
+        $user = auth()->user();
         $mensagem = $request->input('mensagem');
         $contatos = $request->input('contatos');
+        $media = null;
 
-        MensagensEmMassaContatosJob::dispatch($mensagem, $contatos);
+        MensagensEmMassaContatosJob::dispatch($user, $mensagem, $contatos, $media, baseUrlApi(), token_user());
 
 
         return response()->json(['message' => 'Executando envio de mensagens em massa!'], 200);

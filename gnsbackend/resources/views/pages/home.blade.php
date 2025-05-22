@@ -77,7 +77,7 @@
                                 <td>
                                     @if ($envio->errorType)
                                         <span
-                                            class="text-danger">{{ $envio->errorType == 'invalid_number' ? 'Número inválido' : 'Falha no envio' }}</span>
+                                            class="text-danger">{{ historicError($envio->errorType)}}</span>
                                     @else
                                         -
                                     @endif

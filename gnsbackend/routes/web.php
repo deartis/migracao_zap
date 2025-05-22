@@ -53,6 +53,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/envia-mensagem-em-massa-contstos', [MultipleContactMsgController::class, 'enviaMensagemContatosWhatsapp']);
 
 
+    Route::get('/enviaur_mensagem', function (){
+        $apiKey = "1ae19487-c279-497c-86ce-5a480bff5aa0";
+        $telefone = '5521991099205';
+        $mensagem = "Olá, esta é uma mensagem de teste";
+    });
+
 
     Route::get('/page/multiple-msg',[MultipleContactMsgController::class, 'index'])->name('page.multi.msg');
     Route::get('/dashboard', [WhatsAppController::class, 'dashboard'])->name('dashboard');
