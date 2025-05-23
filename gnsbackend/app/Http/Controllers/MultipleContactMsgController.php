@@ -17,8 +17,14 @@ class MultipleContactMsgController extends Controller
     {
         $token = token_user();
         $baseUrl = env('WHATSAPP_API_URL', 'http://localhost:3000');
-        $response = Http::withToken($token)->get($baseUrl . '/contacts');
-        $contatos = $response->successful() ? $response->json()['contacts'] : [];
+
+        Http::fake([
+            $baseUrl.'/contacts' => Http::response(['data' => []], 200),
+        ]);
+
+        //$response = Http::withToken($token)->get($baseUrl . '/contacts');
+        $response = Http::response(['data' => []], 200);
+        $contatos = []; //$response->successful() ? $response->json()['contacts'] : [];
 
         // Log::info($contatos);
 

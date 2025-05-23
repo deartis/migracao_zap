@@ -6,6 +6,8 @@
  * @returns string
  */
 
+use App\Services\PhoneValidator;
+
 if (!function_exists('rm_acentos')) {
     function rm_acentos($string)
     {
@@ -83,5 +85,17 @@ if (!function_exists('historicError')) {
             default :
                 return null;
         }
+    }
+}
+
+/**
+ * Função para exibir o número de usuário formatado e validado
+ *
+ * @return string
+ * */
+if(!function_exists('numeroUsuario')){
+    function numeroUsuario(){
+        $numeroUser = auth()->user()->number;
+        return PhoneValidator::validate($numeroUser)['number'];
     }
 }

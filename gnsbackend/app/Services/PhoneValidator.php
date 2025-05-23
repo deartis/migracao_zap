@@ -116,7 +116,8 @@ class PhoneValidator
         }
 
         // Formata o número no padrão E.164 (padrão internacional)
-        $formattedNumber = '+' . $cleaned;
+        //$formattedNumber = '+' . $cleaned;
+        $formattedNumber = $cleaned;
 
         return [
             'valid' => true,

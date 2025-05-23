@@ -33,6 +33,10 @@ Route::middleware(['auth'])->group(function () {
 
     //Rotas comuns
     Route::get('/page/single-contact', [SingleContactController::class, 'index'])->name('page.single.contact');
+    Route::post('/page/single-contact/send', [SingleContactController::class, 'send'])->name('page.single.contact.send');
+    Route::post('/contact-chat', [SingleContactController::class, 'importarChats'])->name('contact.chat');
+
+
     Route::post('/whatsapp-send', [WhatsAppController::class, 'sendMessage'])->name('whatsapp.send');
     Route::post('/whatsapp-send-bulk', [WhatsAppController::class, 'sendBulkMessages'])->name('whatsapp.send.bulk');
     Route::get('/live', [ToRespondMsgController::class, 'index'])->name('page.respond.msg');
@@ -51,13 +55,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/envio-progresso', [InportListController::class, 'envioProgresso']);
     Route::post('/reseta-progresso', [InportListController::class, 'resetaProgresso']);
     Route::post('/envia-mensagem-em-massa-contstos', [MultipleContactMsgController::class, 'enviaMensagemContatosWhatsapp']);
-
-
-    Route::get('/enviaur_mensagem', function (){
-        $apiKey = "1ae19487-c279-497c-86ce-5a480bff5aa0";
-        $telefone = '5521991099205';
-        $mensagem = "Olá, esta é uma mensagem de teste";
-    });
 
 
     Route::get('/page/multiple-msg',[MultipleContactMsgController::class, 'index'])->name('page.multi.msg');
