@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 

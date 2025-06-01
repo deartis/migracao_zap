@@ -39,5 +39,6 @@ return [
     ],
     'whatsgw' => [
         'apikey' => env('WHATSGW_APIKEY'),
+        'apiUrl' => env('WHATSGW_APIURL'),
     ],
 ];

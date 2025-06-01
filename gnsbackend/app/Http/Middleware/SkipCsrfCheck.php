@@ -11,6 +11,8 @@ class SkipCsrfCheck
 
     protected $except = [
         'whatsapp-send',
+        'webhookqrcode',
+        'webhookqrcode*', // Exemplo de rota que deve ignorar CSRF
         // adicione outras rotas que devem ignorar CSRF
     ];
 

@@ -25,8 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
     fileInput.addEventListener('change', function () {
         if (fileInput.value) {
             // Extrai apenas o nome do arquivo do caminho completo
-            const fileName = fileInput.value.split('\\').pop();
-            fileChosen.textContent = fileName;
+            fileChosen.textContent = fileInput.value.split('\\').pop();
         } else {
             fileChosen.textContent = 'Nenhum arquivo selecionado';
         }
@@ -40,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
             contadorModal.textContent = `${totalSelecionados} selecionado${totalSelecionados !== 1 ? 's' : ''}`;
         }
     }
+
     // Função para obter iniciais do nome
     function obterIniciais(nome) {
         if (!nome || nome.trim() === '' || nome === 'undefined') return '?';
@@ -316,7 +316,6 @@ document.addEventListener('DOMContentLoaded', function () {
     `;
         contadorSelecionadosCard.textContent = '0 selecionados';
     });
-
 
     document.getElementById('limpar-selecao').addEventListener('click', () => {
         // Desmarca todos no modal

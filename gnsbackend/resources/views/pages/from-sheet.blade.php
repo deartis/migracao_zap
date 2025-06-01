@@ -1,7 +1,7 @@
 @extends('layout.app')
 @section('styles')
     <style>
-        
+
     </style>
 @endsection
 @section('content')
@@ -88,13 +88,25 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="messageTextarea" class="form-label fw-bold">Mensagem em Massa:</label>
+                        <div class="mb-3">
+                            <!-- Input file original (oculto) -->
+                            <input type="file" class="input-file-hidden form-control" name="arquivo_msg_massa"
+                                id="arquivo_msg_massa">
+
+                            <!-- Botão personalizado com ícone -->
+                            <button type="button" class="btn btn-primary w-auto" id="custom-file-button_msg_massa">
+                                <i class="bi bi-paperclip"></i>Adicionar arquivo
+                            </button>
+
+                            <!-- Elemento para mostrar o nome do arquivo selecionado -->
+                            <span id="file-chosen"></span>
+                        </div>
                         <textarea id="messageTextarea" class="form-control" rows="8"
                             placeholder="Digite sua mensagem aqui. Use os placeholders abaixo para personalizar para cada destinatário."></textarea>
                     </div>
 
                     <div class="mb-3">
-                        <button class="btn btn-info" id="btnCarregarTemplate">Carregar Mensagem</button>
+                        <button class="btn btn-primary" id="btnCarregarTemplate">Carregar Mensagem</button>
                     </div>
 
                     <div class="card mb-4">
@@ -141,7 +153,7 @@
                 <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
-                            <div class="modal-header bg-warning text-dark">
+                            <div class="modal-header bg-success text-dark">
                                 <h5 class="modal-title">Confirmar Envio</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                     aria-label="Close"></button>
@@ -154,7 +166,7 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar
                                 </button>
-                                <button type="button" class="btn btn-warning" id="btnConfirmarEnvio">Confirmar Envio
+                                <button type="button" class="btn btn-success" id="btnConfirmarEnvio">Confirmar Envio
                                 </button>
                             </div>
                         </div>
@@ -163,6 +175,34 @@
 
                 <!-- Modal -->
                 <div class="modal fade" id="modalEnvio" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+                    data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content text-center">
+                            <div class="modal-body">
+                                <h5 class="modal-title mb-3">Enviando mensagens...</h5>
+                                <p id="progressoTexto">0 de 0</p>
+                                <div class="progress" style="height: 25px; position: relative;">
+                                    <div id="barraProgresso"
+                                        class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                        style="width: 0%;">
+                                        0%
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button type="button" class="btn btn-secondary btn-sm"
+                                        id="btnFecharModal">Fechar</button>
+                                    <p id="msgBackground" class="text-muted mt-2" style="display: none;">
+                                        As mensagens continuam sendo enviadas em segundo plano.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Modal -->
+                {{-- <div class="modal fade" id="modalEnvio" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
                     data-bs-keyboard="false">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content text-center">
@@ -179,7 +219,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
             </div>
         </div>

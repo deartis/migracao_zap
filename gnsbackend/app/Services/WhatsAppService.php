@@ -1,6 +1,8 @@
 <?php
 namespace App\Services;
 
+use Exception;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -25,6 +27,7 @@ class WhatsAppService
      * @param array $data
      * @param string|null $userToken
      * @return Response
+     * @throws ConnectionException
      */
     protected function request(string $endpoint, string $method = 'GET', array $data = [], string $userToken = null): Response
     {
@@ -37,11 +40,11 @@ class WhatsAppService
             ])->timeout(30);
 
             if ($method === 'GET') {
-                return $response->get("{$this->baseUrl}/{$endpoint}", $data);
+                return $response->get("$this->baseUrl/$endpoint", $data);
             } else {
-                return $response->post("{$this->baseUrl}/{$endpoint}", $data);
+                return $response->post("$this->baseUrl/$endpoint", $data);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("WhatsApp API Error: {$e->getMessage()}");
             throw $e;
         }
@@ -71,7 +74,7 @@ class WhatsAppService
         $token = $userToken ?? $this->token;
 
         $request = Http::withHeaders([
-            'Authorization' => "Bearer {$token}",
+            'Authorization' => "Bearer $token",
             'Accept' => 'application/json',
         ])->timeout(30);
 
@@ -119,7 +122,7 @@ class WhatsAppService
              ];
          }*/
 
-        return $request->asMultipart()->post("{$this->baseUrl}/send-message", $multipart);
+        return $request->asMultipart()->post("$this->baseUrl/send-message", $multipart);
     }
 
 

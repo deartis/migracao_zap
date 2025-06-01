@@ -8,7 +8,8 @@
             {{-- <div class="card-header bg-light">
                 <h4 class="mb-0">Enviar mensagem em massa</h4>
             </div> --}}
-            <form id="form-msg_unica" {{--action="{{ route('page.single.contact.send') }}" method="POST"--}}>
+            <div id="resultado"></div>
+            <form id="form-msg_unica" enctype="multipart/form-data">
                 @csrf
                 <div class="card-body">
                     <div class="row">
@@ -48,7 +49,7 @@
                                                 <!-- Botão para importar arquivo -->
                                                 <div class="mb-3">
                                                     <!-- Input file original (oculto) -->
-                                                    <input type="file" class="input-file-hidden" id="arquivo">
+                                                    <input type="file" class="input-file-hidden form-control" name="arquivo" id="arquivo">
 
                                                     <!-- Botão personalizado com ícone -->
                                                     <button type="button" class="btn btn-primary"
@@ -146,26 +147,84 @@
             e.preventDefault();
 
             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const contato = document.getElementById('contato').value;
+            const mensagem = document.getElementById('mensagem_unica').value;
+            const arquivoInput = document.getElementById('arquivo');
+            const arquivo = arquivoInput.files[0];
 
-            const dados = {
-                contato: document.getElementById('contato').value,
-                mensagem: document.getElementById('mensagem_unica').value
-            };
+            if (arquivo) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const base64 = reader.result.split(',')[1]; // Remove o prefixo data:...;base64,
+                    const dados = {
+                        contato: contato,
+                        mensagem: mensagem,
+                        arquivo: {
+                            nome: arquivo.name,
+                            mimetype: arquivo.type,
+                            base64: base64
+                        }
+                    };
 
-            axios.post('/page/single-contact/send', dados, {
+                    axios.post('/page/single-contact/send', dados, {
+                        headers: {
+                            'X-CSRF-TOKEN': token
+                        }
+                    })
+                        .then(response => {
+                            console.log(response.data);
+                            document.getElementById('resultado').innerText = 'Mensagem enviada com sucesso';
+                        })
+                        .catch(error => {
+                            console.log(error.response.data);
+                            document.getElementById('resultado').innerText = 'Erro ao enviar a mensagem';
+                        });
+                };
+                reader.readAsDataURL(arquivo);
+            } else {
+                const dados = {
+                    contato: contato,
+                    mensagem: mensagem
+                };
+
+                axios.post('/page/single-contact/send', dados, {
+                    headers: {
+                        'X-CSRF-TOKEN': token
+                    }
+                })
+                    .then(response => {
+                        console.log(response.data);
+                        document.getElementById('resultado').innerText = 'Mensagem enviada com sucesso';
+                    })
+                    .catch(error => {
+                        console.log(error.response.data);
+                        document.getElementById('resultado').innerText = 'Erro ao enviar a mensagem';
+                    });
+            }
+        });
+
+        /*document.getElementById('form-msg_unica').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const form = document.getElementById('form-msg_unica');
+            const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const formData = new FormData(form);
+
+            axios.post('/page/single-contact/send', formData, {
                 headers: {
-                    'X-CSRF-TOKEN': token
+                    'X-CSRF-TOKEN': token,
+                    'Content-Type': 'multipart/form-data'
                 }
             })
                 .then(response => {
                     console.log(response.data);
-                    document.getElementById('resultado').innerText = 'Mensagem enviada com sucesso';
+                    document.getElementById('resultado').innerText = 'Mensagem enviada com sucesso!';
                 })
                 .catch(error => {
-                    console.log(error.response.data);
-                    document.getElementById('resultado').innerText = 'Erro ao enviar a mensagem';
+                    console.error(error.response?.data || error);
+                    document.getElementById('resultado').innerText = 'Erro ao enviar a mensagem.';
                 });
-        });
+        });*/
     </script>
 @endsection
 

@@ -38,23 +38,37 @@ class SingleContactController extends Controller
             ]);
         }
 
-            Log::info($request->contato);
+        $contato = $request->contato;
+        $mensagem = $request->mensagem;
+        $arquivo = $request->arquivo;
 
-        $response = $this->whatsGwService->sendMessage(
-            $numero['number'],
-            $request->contato,
-            $request->mensagem
-        );
+        if ($arquivo) {
+            $response = $this->whatsGwService->sendFile(
+                $numero['number'],
+                $contato,
+                $arquivo['base64'],
+                $arquivo['nome'],
+                $arquivo['mimetype'],
+                $mensagem
+            );
+        } else {
+            $response = $this->whatsGwService->sendMessage(
+                $numero['number'],
+                $contato,
+                $mensagem
+            );
+        }
 
         return response()->json($response);
     }
 
-public function importarChats()
+    public function importarChats()
 {
-    $apiKey = env('WHATSGW_APIKEY'); // coloque no .env
-    $phoneNumber = numeroUsuario(); // ex: 5511999999999
+    $apiKey = config('whatsgw.apiKey');
+    $apiUrl = config('whatsgw.apiUrl');
+    $phoneNumber = numeroUsuario();
 
-    $response = Http::asForm()->post('https://app.whatsgw.com.br/api/WhatsGw/GetAllChats', [
+    $response = Http::asForm()->post($apiUrl.'/GetAllChats', [
         'apikey' => $apiKey,
         'phone_number' => $phoneNumber,
     ]);

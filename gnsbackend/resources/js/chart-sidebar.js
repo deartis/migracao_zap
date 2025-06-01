@@ -68,10 +68,10 @@ const createDonutChart = (elementId, percentage, colors) => {
 };
 
 // Usage Chart - 30%
-createDonutChart('usageChart', window.usoPacote, ['#0dcaf0', '#e9ecef']);
+createDonutChart('usageChart', window.usoPacote, ['#e9ecef','#0dcaf0']);
 
 // Messages Chart - 10/4000 (0.25%)
-createDonutChart('messagesChart', window.usoPacote, ['#20c997', '#e9ecef']);
+createDonutChart('messagesChart', window.usoPacote, ['#e9ecef','#20c997']);
 
 // Errors Chart - 2 errors
-createDonutChart('errorsChart', window.totalErros, ['#dc3545', '#e9ecef']);
+createDonutChart('errorsChart', window.totalErros, ['#dc3545','#e9ecef']);

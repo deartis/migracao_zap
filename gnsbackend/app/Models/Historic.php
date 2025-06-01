@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin IdeHelperHistoric
+ */
 class Historic extends Model
 {
     protected $table = 'historic';

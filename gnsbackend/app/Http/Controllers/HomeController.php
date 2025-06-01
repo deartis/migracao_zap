@@ -3,38 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\Historic;
-use Illuminate\Http\Request;
-
+//use Illuminate\Http\Request;
+use GuzzleHttp\Psr7\Request;
+use Illuminate\Support\Facades\Http;
 class HomeController extends Controller
 {
     public function index()
     {
-        //orderBy('created_at', 'desc')->paginate(10);
+        // orderBy('created_at', 'desc')->paginate(10);
         $historico = Historic::where('user_id', auth()->id())->orderByDesc('updated_at')->paginate(5);
         $user = auth()->user();
+        $counttotalErros = Historic::where('status', 'error')->where('user_id', auth()->id())->count();
 
-        //dd(auth()->id());
-
-        //=====================================================
-        // Porcentagem de uso do plano
-        //=====================================================
         $limiteMensagem = $user->msgLimit;
-        $mensagensEnviadas = $user->sendedMsg;
+        $mensagensEnviadas = $user->sendedMsg - $counttotalErros;
         $usoPacoteCiclo = ($mensagensEnviadas / $limiteMensagem) * 100;
         $usoPacoteCiclo = intval($usoPacoteCiclo);
 
-        //=====================================================
-        // Total de erros
-        //=====================================================
-        $totalErros = Historic::where('status', 'error')->where('user_id', auth()->id())->count();
-
-        //dd($limiteMensagem, $mensagensEnviadas, $usoPacoteCiclo);
-        //$usoPacoteCiclo = null;
+        $totalErros = ($counttotalErros / $limiteMensagem) * 100;
+        $totalErros = intval($totalErros);
 
         return view('pages.home', [
             'historico' => $historico,
             'usoPacoteCiclo' => $usoPacoteCiclo,
             'totalErros' => $totalErros,
+            'contaErros' => $counttotalErros,
         ]);
     }
 }

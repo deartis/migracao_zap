@@ -1,9 +1,15 @@
+@php use Carbon\Carbon; @endphp
 @extends('layout.app')
 @section('title_page', 'Bem Vindo ' . uniqName(auth()->user()->name) . '!')
 @section('content')
-    @php
-        app()->setLocale('pt_BR');
-    @endphp
+
+    @if(session('success'))
+        <x-alert type="success" :message="session('success')"/>
+    @endif
+
+    @if(session('error'))
+        <x-alert type="error" :message="session('error')"/>
+    @endif
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-4 mb-3 mb-md-0">
@@ -23,7 +29,8 @@
                     <h5 class="card-title mb-4">Mensagens Enviadas</h5>
                     <div class="chart-container">
                         <canvas id="messagesChart"></canvas>
-                        <div class="chart-label">{{ auth()->user()->sendedMsg }} / {{ auth()->user()->msgLimit }}</div>
+                        <div class="chart-label">{{ auth()->user()->sendedMsg - $contaErros }}
+                            / {{ auth()->user()->msgLimit }}</div>
 
                     </div>
                 </div>
@@ -35,7 +42,7 @@
                     <h5 class="card-title mb-4">Erros de Envio</h5>
                     <div class="chart-container">
                         <canvas id="errorsChart"></canvas>
-                        <div class="chart-label">{{ $totalErros }}</div>
+                        <div class="chart-label">{{ $contaErros }}</div>
                     </div>
                 </div>
             </div>
@@ -52,44 +59,44 @@
             <div class="table-actions table-responsive">
                 <table class="table table-hover">
                     <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Contato</th>
-                            <th>Status</th>
-                            <th>Nome</th>
-                            <th>Tipo de erro</th>
-                            <th>Data/Hora</th>
-                        </tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>Contato</th>
+                        <th>Status</th>
+                        <th>Nome</th>
+                        <th>Tipo de erro</th>
+                        <th>Data/Hora</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        @forelse($historico as $envio)
-                            <tr>
-                                <td>{{ $envio->id }}</td>
-                                <td>{{ $envio->contact }}</td>
-                                <td>
-                                    @if ($envio->status === 'success')
-                                        <span class="badge bg-success">Enviado</span>
-                                    @else
-                                        <span class="badge bg-danger">Não Enviado</span>
-                                    @endif
-                                </td>
-                                <td>{{ $envio->name ?? '-' }}</td>
-                                <td>
-                                    @if ($envio->errorType)
-                                        <span
-                                            class="text-danger">{{ historicError($envio->errorType)}}</span>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td>{{ \Carbon\Carbon::parse($envio->updated_at)->format('d/m/Y H:i') }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">Nenhuma movimentação registrada ainda.
-                                </td>
-                            </tr>
-                        @endforelse
+                    @forelse($historico as $envio)
+                        <tr>
+                            <td>{{ $envio->id }}</td>
+                            <td>{{ $envio->contact }}</td>
+                            <td>
+                                @if ($envio->status === 'success')
+                                    <span class="badge bg-success">Enviado</span>
+                                @else
+                                    <span class="badge bg-danger">Não Enviado</span>
+                                @endif
+                            </td>
+                            <td>{{ $envio->name ?? '-' }}</td>
+                            <td>
+                                @if ($envio->errorType)
+                                    <span
+                                        class="text-danger">{{  $envio->errorType }}</span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td>{{ Carbon::parse($envio->updated_at)->format('d/m/Y H:i') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Nenhuma movimentação registrada ainda.
+                            </td>
+                        </tr>
+                    @endforelse
                     </tbody>
 
                 </table>

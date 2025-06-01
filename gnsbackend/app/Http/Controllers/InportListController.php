@@ -30,10 +30,17 @@ class InportListController extends Controller
      */
     public function enviaMensagemEmMassaLista(Request $request): JsonResponse
     {
-        Log::info("===================== Log do CTRL ======================");
+        Log::info('===================== Log do CTRL ======================');
+    
+        // Decodificar o campo JSON chamado 'data'
+        $data = json_decode($request->input('data'), true);  // <- Aqui é importante
 
-        // 1. Validação dos dados de entrada
-        $validator = Validator::make($request->all(), [
+        if (!$data || !isset($data['contacts']) || !isset($data['template'])) {
+            return response()->json(['message' => 'Dados inválidos ou mal formatados.'], 400);
+        }
+
+        // Validar os dados recebidos
+        $validator = Validator::make($data, [
             'template' => 'required|string',
             'contacts' => 'required|array|min:1',
         ], [
@@ -47,64 +54,53 @@ class InportListController extends Controller
             return response()->json(['message' => $validator->errors()->first()], 400);
         }
 
-        // 2. Recupera e verifica dados principais
-        $template = $request->template;
+        $template = $data['template'];
+        $contatos = $data['contacts'];
+        $usuario = auth()->user();
         $statusUsuario = $this->verificaStatusUser();
 
-        $usuario = auth()->user();
-        $temLimite = $usuario->sendedMsg < $usuario->msgLimit;
-
-        // 3. Verifica limitações do usuário
-        if (!$temLimite) {
-            Log::error("Usuário atingiu 100% do plano", ['user_id' => auth()->id()]);
+        if ($usuario->sendedMsg >= $usuario->msgLimit) {
             return response()->json(['message' => 'Você usou 100% do seu plano!'], 403);
         }
 
         if (!$usuario->enabled) {
-            Log::info("Usuário bloqueado", ['user_id' => auth()->id()]);
-            return response()->json(
-                [
-                    'message' => 'Você está sem saldo para mensagem ou está bloqueado. Entre em contato com o suporte.'
-                ], 403);
+            return response()->json(['message' => 'Você está sem saldo para mensagem ou está bloqueado.'], 403);
         }
 
-        // 4. Salva o template como última mensagem do usuário
         auth()->user()->update(['lastMessage' => $template]);
 
-        // 5. Processamento dos contatos
+        // 🟡 Aqui você trata o arquivo (se houver)
+        if ($request->hasFile('arquivo')) {
+            $arquivo = $request->file('arquivo');
+
+            // Exemplo: salvar o arquivo temporariamente
+            $pathArquivo = $arquivo->store('arquivos_mensagens', 'public');
+        } else {
+            $pathArquivo = null;
+        }
+
         try {
-            $contatos = $request->contacts;
             $erros = $this->verificaContatos($contatos);
-
-            //Log::info($erros);
-
             $contatosProcessados = $this->processarContatos($contatos);
 
-            //Log::info($contatosProcessados);
-
-            // 6. Dispara o job para processamento assíncrono
+            // 🟢 Você pode passar $pathArquivo para o Job se desejar
             MensagensEmMassaJob::dispatch(
                 $contatosProcessados,
-                token_user(), // Função existente no seu sistema
+                token_user(),
                 auth()->id(),
                 $statusUsuario,
-                $erros
+                $erros,
+                $pathArquivo ? $pathArquivo : null,
             );
-
-            /*Log::info("Job de envio de mensagens em massa despachado com sucesso", [
-                'total_contatos' => count($contatosProcessados),
-                'total_erros' => count($erros),
-                'usuario_id' => auth()->id()
-            ]);*/
 
             return response()->json(['message' => 'Mensagens sendo executadas...']);
         } catch (\Exception $e) {
-            Log::error("Erro ao processar contatos para envio em massa", [
+            Log::error('Erro ao processar contatos', [
                 'erro' => $e->getMessage(),
                 'usuario_id' => auth()->id()
             ]);
 
-            return response()->json(['message' => 'Ocorreu um erro ao processar a lista de contatos. Tente novamente mais tarde.'], 500);
+            return response()->json(['message' => 'Erro ao processar a lista de contatos.'], 500);
         }
     }
 
@@ -145,7 +141,7 @@ class InportListController extends Controller
         $erros = [];
 
         foreach ($contatos as $index => $contato) {
-            //Log::error($contato);
+            // Log::error($contato);
             if (empty($contato['number'])) {
                 $erros[] = [
                     'indice' => $index,
@@ -177,14 +173,9 @@ class InportListController extends Controller
         $result = $verifica->extractContacts($contatosF)['contacts'];
 
         foreach ($result as $re) {
-            $phoneWithSuffix = $re['phone'];
-            if (!str_contains($phoneWithSuffix, '@c.us')) {
-                $phoneWithSuffix .= '@c.us';
-            }
-
             $contatosFinais[] = [
                 'name' => $re['name'],
-                'number' => $phoneWithSuffix,
+                'number' => $re['phone'],
                 'message' => $re['metadata']['message'] ?? '',
             ];
         }
@@ -192,7 +183,7 @@ class InportListController extends Controller
         return $contatosFinais;
     }
 
-    //Gerencia o visual de progresso de envio de mensagens
+    // Gerencia o visual de progresso de envio de mensagens
     public function envioProgresso()
     {
         $userId = auth()->id();
@@ -201,7 +192,6 @@ class InportListController extends Controller
 
     public function resetaProgresso()
     {
-        Log::info('Veio aqui resetar');
         $userId = auth()->id();
         $conditions = ['user_id' => $userId];
 
@@ -217,7 +207,7 @@ class InportListController extends Controller
         );
 
         return response()->json([
-            'message'=> 'Mensagens enviadas com sucesso!!!'
+            'message' => 'Mensagens enviadas com sucesso!!!'
         ]);
     }
 

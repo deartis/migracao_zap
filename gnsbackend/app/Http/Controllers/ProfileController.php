@@ -2,18 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Historic;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Mockery\Exception;
+use Illuminate\Support\Facades\Validator;
 
 class ProfileController extends Controller
 {
     public function index()
     {
         $user = User::where('id', auth()->id())->first();
-        //dd($usuario);
-        return view('pages.profile', compact("user"));
+        // Conta os erros do Historic do usuário
+        $counttotalErros = Historic::where('status', 'error')->where('user_id', auth()->id())->count();
+
+        // dd($usuario);
+        return view('pages.profile',
+            [
+                'user' => $user,
+                'counttotalErros' => $counttotalErros
+            ]);
     }
 
     public function update(Request $request, User $user)
@@ -29,9 +37,10 @@ class ProfileController extends Controller
         return redirect()->route('page.profile')->with('success', 'Usuário atualizado!');
     }
 
-    public function updatePassword(Request $request){
-        //$user = auth()->user();
-        //dd(Hash::check($request->current_password, $user->password), $user->password, $request->all());
+    public function updatePassword(Request $request)
+    {
+        // $user = auth()->user();
+        // dd(Hash::check($request->current_password, $user->password), $user->password, $request->all());
         $data = $request->all();
 
         if (!Hash::check($data['current_password'], auth()->user()->password)) {
@@ -52,17 +61,14 @@ class ProfileController extends Controller
 
         return redirect()->route('page.profile')->with('success', 'Senha alterada com sucesso!');
 
-
         $user = auth()->user();
 
-        //Verifica se a senha atual está correto
-        if(!Hash::check($request->current_password, $user->password)){
+        // Verifica se a senha atual está correto
+        if (!Hash::check($request->current_password, $user->password)) {
             return back()->withErrors([
                 'current_password' => 'A senha atual está incorreta!'
             ]);
         }
-
-
 
         $user->password = Hash::make($request->password);
         $user->save();

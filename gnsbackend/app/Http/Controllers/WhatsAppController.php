@@ -41,6 +41,8 @@ class WhatsAppController extends Controller
     {
         try {
             $validated = $request->validated();
+
+            /** @var \App\Models\User $user */
             $user = auth()->user();
 
             $now = now();

@@ -1,8 +1,11 @@
 @php
     use Carbon\Carbon;
-    Carbon::setLocale('pt_BR');
+    app()->setLocale('pt_BR');
     $user = auth()->user();
     $token = $user->id;
+@endphp
+@php
+
 @endphp
 <!doctype html>
 <html lang="pt-BR">
