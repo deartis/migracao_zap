@@ -23,19 +23,17 @@ Route::middleware(['auth'])->get('/whatsapp/token', function () {
 
 // Rota para receber QR Code via Webhook
 Route::post('/webhookqrcode', [WebhookController::class, 'receberQrCode'])->name('webhook.qrcode');
-
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
+    //Teste de novo método simples
+    Route::get('/whatsapp/connect', [WhatsAppController::class, 'showQRCode'])->name('whatsapp.connect');
 
     Route::middleware(['check.instance'])->group(function () {
         Route::get('/page/single-contact', [SingleContactController::class, 'index'])->name('page.single.contact');
         Route::post('/page/single-contact/send', [SingleContactController::class, 'send'])->name('page.single.contact.send');
         Route::post('/contact-chat', [SingleContactController::class, 'importarChats'])->name('contact.chat');
 
-        Route::post('/whatsapp-send', [WhatsAppController::class, 'sendMessage'])->name('whatsapp.send');
-        Route::post('/whatsapp-send-bulk', [WhatsAppController::class, 'sendBulkMessages'])->name('whatsapp.send.bulk');
         Route::get('/live', [ToRespondMsgController::class, 'index'])->name('page.respond.msg');
-        Route::post('/responder', [WhatsAppController::class, 'responder'])->name('whatsapp.responder');
         Route::get('/historic', [HistoricController::class, 'index'])->name('page.historic');
 
         Route::get('/page/from-sheet', [InportListController::class, 'index'])->name('page.from.sheet');
@@ -46,19 +44,24 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/envia-mensagem-em-massa-contstos', [MultipleContactMsgController::class, 'enviaMensagemContatosWhatsapp']);
 
         Route::get('/page/multiple-msg', [MultipleContactMsgController::class, 'index'])->name('page.multi.msg');
-        Route::get('/dashboard', [WhatsAppController::class, 'dashboard'])->name('dashboard');
     });
 
     Route::get('/connection', [ConnectionController::class, 'index'])->name('page.connection');
-    Route::get('/whatsapp/status', [ConnectionController::class, 'status']);
+    Route::get('/conectarwgw', [ConnectionController::class, 'conectarWgw']);
+    Route::get('/gerar-qrcode', [ConnectionController::class, 'gerarQrCode']);
+    Route::get('/status-conexao', [ConnectionController::class, 'status']);
+    Route::post('/resetar-instancia', [ConnectionController::class, 'resetarInstancia']);
+    //Route::post('/desconectar', [ConnectionController::class, 'desconectar']);
+
+
+    /*Route::get('/whatsapp/status', [ConnectionController::class, 'status'])->name('whatsapp.status');
     Route::get('/whatsapp/qrcode', [ConnectionController::class, 'qrcode']);
     Route::post('/whatsapp/restart', [ConnectionController::class, 'restartInstance']);
     Route::post('/whatsapp/disconnect', [ConnectionController::class, 'disconnect']);
     Route::post('/whatsapp/generate-initial-qr', [ConnectionController::class, 'generateInitialQrCode'])
-        ->middleware('auth');
+        ->middleware('auth');*/
 
-    /*Route::get('/whatsapp/status', [ConnectionController::class, 'verificarStatus']);
-    Route::get('/whatsapp/qrcode', [ConnectionController::class, 'gerarQrCode']);*/
+    /*Route::get('/whatsapp/status', [ConnectionController::class, 'verificarStatus']);*/
 
     Route::get('/qrcode-atualizar', function () {
         $diretorio = storage_path('app/public/qrcodes');

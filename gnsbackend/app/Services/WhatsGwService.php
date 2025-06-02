@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Instances;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -51,16 +52,29 @@ class WhatsGwService
     public function newStance()
     {
         $user = auth()->user();
-
         try {
-            $response = Http::asForm()->post('https://app.whatsgw.com.br/api/WhatsGw/NewInstance', [
+            $response = Http::asForm()->post(config('whatsgw.apiUrl').'/NewInstance', [
                 'apikey' => $this->apiKey,
                 'type' => '1',
             ]);
 
             $dados = $response->json();
-            $user->instance_id = $dados['w_instancia_id'];
-            $user->save();
+            Log::info($dados);
+            Log::info('------------------------------------------------------------------');
+
+            if($dados['result'] === 'success'){
+
+                Instances::updateOrCreate([
+                    'user_id' => $user->id,
+                    'instance_id' => $dados['w_instancia_id'],
+                    'token' => $user->id,
+                ]);
+
+                Log::info("Salvando o ID da Instância no Banco");
+                $user->instance_id = $dados['w_instancia_id'];
+                $user->save();
+
+            }
 
         } catch (Exception $exception) {
             Log::error("Erro: ", [$exception->getMessage()]);
@@ -68,6 +82,6 @@ class WhatsGwService
         }
 
         Log::info("Nova Intsnacia: {$dados['w_instancia_id']}");
-        //return $response->json();
+        return $response->json();
     }
 }
