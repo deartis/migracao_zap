@@ -21,16 +21,16 @@
             </button>
 
             <div class="d-grid gap-2">
-                @if(!$haInstancia)
+
                     <!-- Botão de debug (remover em produção) -->
                     <button id="btn-nova-conexao" class="btn btn-info btn-sm" onclick="novaConexaoGWG()">
                         Nova conexão
                     </button>
-                @else
+
                     <button id="btn-resetar" class="btn btn-warning btn-sm d-none mt-2">
                         🔁 Resetar QR Code
                     </button>
-                @endif
+
             </div>
         </div>
     </div>

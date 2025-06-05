@@ -22,18 +22,17 @@ Route::middleware(['auth'])->get('/whatsapp/token', function () {
 });
 
 // Rota para receber QR Code via Webhook
-<<<<<<< HEAD
+
 //Route::post('/webhookqrcode', [WebhookController::class, 'receberQrCode'])->name('webhook.qrcode');
 
-=======
 Route::post('/webhookqrcode', [WebhookController::class, 'receberQrCode'])->name('webhook.qrcode');
->>>>>>> corrigir-envio-mensagem
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     //Teste de novo método simples
     Route::get('/whatsapp/connect', [WhatsAppController::class, 'showQRCode'])->name('whatsapp.connect');
 
-    //Route::middleware(['check.instance'])->group(function () {
+    Route::middleware(['check.instance'])->group(function () {
         Route::get('/page/single-contact', [SingleContactController::class, 'index'])->name('page.single.contact');
         Route::post('/page/single-contact/send', [SingleContactController::class, 'send'])->name('page.single.contact.send');
         Route::post('/contact-chat', [SingleContactController::class, 'importarChats'])->name('contact.chat');
@@ -49,12 +48,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/envia-mensagem-em-massa-contstos', [MultipleContactMsgController::class, 'enviaMensagemContatosWhatsapp']);
 
         Route::get('/page/multiple-msg', [MultipleContactMsgController::class, 'index'])->name('page.multi.msg');
-<<<<<<< HEAD
+
         Route::get('/dashboard', [WhatsAppController::class, 'dashboard'])->name('dashboard');
     //});
-=======
+
     });
->>>>>>> corrigir-envio-mensagem
 
     Route::get('/connection', [ConnectionController::class, 'index'])->name('page.connection');
     Route::get('/conectarwgw', [ConnectionController::class, 'conectarWgw']);
