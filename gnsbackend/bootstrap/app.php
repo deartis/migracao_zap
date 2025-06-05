@@ -1,4 +1,5 @@
 <?php
+ini_set('memory_limit', '2048M');
 
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\CheckInstanceConnection;

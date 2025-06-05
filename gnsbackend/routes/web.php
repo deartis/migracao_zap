@@ -22,12 +22,12 @@ Route::middleware(['auth'])->get('/whatsapp/token', function () {
 });
 
 // Rota para receber QR Code via Webhook
-Route::post('/webhookqrcode', [WebhookController::class, 'receberQrCode'])->name('webhook.qrcode');
+//Route::post('/webhookqrcode', [WebhookController::class, 'receberQrCode'])->name('webhook.qrcode');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
-    Route::middleware(['check.instance'])->group(function () {
+    //Route::middleware(['check.instance'])->group(function () {
         Route::get('/page/single-contact', [SingleContactController::class, 'index'])->name('page.single.contact');
         Route::post('/page/single-contact/send', [SingleContactController::class, 'send'])->name('page.single.contact.send');
         Route::post('/contact-chat', [SingleContactController::class, 'importarChats'])->name('contact.chat');
@@ -47,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/page/multiple-msg', [MultipleContactMsgController::class, 'index'])->name('page.multi.msg');
         Route::get('/dashboard', [WhatsAppController::class, 'dashboard'])->name('dashboard');
-    });
+    //});
 
     Route::get('/connection', [ConnectionController::class, 'index'])->name('page.connection');
     Route::get('/whatsapp/status', [ConnectionController::class, 'status']);
