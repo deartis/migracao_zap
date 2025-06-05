@@ -1,0 +1,69 @@
+
+
+Thu Jun  5 04:40:15 2025
+Command line: TestDisk
+
+TestDisk 7.1, Data Recovery Utility, July 2019
+Christophe GRENIER <grenier@cgsecurity.org>
+https://www.cgsecurity.org
+OS: Linux, kernel 6.8.0-59-generic (#61~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue Apr 15 17:03:15 UTC 2) x86_64
+Compiler: GCC 11.2
+ext2fs lib: 1.46.5, ntfs lib: libntfs-3g, reiserfs lib: none, ewf lib: none, curses lib: ncurses 6.3
+/dev/sda: LBA, LBA48 support
+/dev/sda: size       250069680 sectors
+/dev/sda: user_max   250069680 sectors
+Warning: can't get size for Disk /dev/mapper/control - 0 B - 0 sectors, sector size=512
+Warning: can't get size for Disk /dev/loop33 - 0 B - 0 sectors, sector size=512
+Hard disk list
+Disk /dev/sda - 128 GB / 119 GiB - CHS 15566 255 63, sector size=512 - WALRAM  128G, S/N:2024032804161, FW:HC2705H3
+Disk /dev/loop0 - 4096 B - 8 sectors (RO), sector size=512
+Disk /dev/loop1 - 202 MB / 192 MiB - 394936 sectors (RO), sector size=512
+Disk /dev/loop10 - 70 MB / 66 MiB - 136728 sectors (RO), sector size=512
+Disk /dev/loop11 - 151 MB / 144 MiB - 295856 sectors (RO), sector size=512
+Disk /dev/loop12 - 147 MB / 140 MiB - 287864 sectors (RO), sector size=512
+Disk /dev/loop13 - 282 MB / 269 MiB - 551440 sectors (RO), sector size=512
+Disk /dev/loop14 - 216 MB / 206 MiB - 422496 sectors (RO), sector size=512
+Disk /dev/loop15 - 216 MB / 206 MiB - 423592 sectors (RO), sector size=512
+Disk /dev/loop16 - 172 MB / 164 MiB - 337560 sectors (RO), sector size=512
+Disk /dev/loop17 - 529 MB / 505 MiB - 1034424 sectors (RO), sector size=512
+Disk /dev/loop18 - 366 MB / 349 MiB - 716176 sectors (RO), sector size=512
+Disk /dev/loop19 - 541 MB / 516 MiB - 1056784 sectors (RO), sector size=512
+Disk /dev/loop2 - 202 MB / 192 MiB - 394920 sectors (RO), sector size=512
+Disk /dev/loop20 - 423 MB / 404 MiB - 827600 sectors (RO), sector size=512
+Disk /dev/loop21 - 424 MB / 404 MiB - 828160 sectors (RO), sector size=512
+Disk /dev/loop22 - 96 MB / 91 MiB - 187776 sectors (RO), sector size=512
+Disk /dev/loop23 - 221 MB / 211 MiB - 433128 sectors (RO), sector size=512
+Disk /dev/loop24 - 217 MB / 207 MiB - 424736 sectors (RO), sector size=512
+Disk /dev/loop25 - 88 MB / 84 MiB - 172376 sectors (RO), sector size=512
+Disk /dev/loop26 - 1957 KB / 1912 KiB - 3824 sectors (RO), sector size=512
+Disk /dev/loop27 - 940 MB / 896 MiB - 1836144 sectors (RO), sector size=512
+Disk /dev/loop28 - 949 MB / 905 MiB - 1855256 sectors (RO), sector size=512
+Disk /dev/loop29 - 46 MB / 44 MiB - 91024 sectors (RO), sector size=512
+Disk /dev/loop3 - 58 MB / 55 MiB - 113384 sectors (RO), sector size=512
+Disk /dev/loop30 - 53 MB / 50 MiB - 104232 sectors (RO), sector size=512
+Disk /dev/loop31 - 1191 MB / 1136 MiB - 2326656 sectors (RO), sector size=512
+Disk /dev/loop32 - 1193 MB / 1138 MiB - 2331064 sectors (RO), sector size=512
+Disk /dev/loop4 - 58 MB / 55 MiB - 113384 sectors (RO), sector size=512
+Disk /dev/loop5 - 66 MB / 63 MiB - 130600 sectors (RO), sector size=512
+Disk /dev/loop6 - 66 MB / 63 MiB - 130592 sectors (RO), sector size=512
+Disk /dev/loop7 - 77 MB / 73 MiB - 151328 sectors (RO), sector size=512
+Disk /dev/loop8 - 77 MB / 73 MiB - 151320 sectors (RO), sector size=512
+Disk /dev/loop9 - 70 MB / 66 MiB - 136728 sectors (RO), sector size=512
+
+Partition table type (auto): EFI GPT
+Disk /dev/sda - 128 GB / 119 GiB - WALRAM  128G
+Partition table type: EFI GPT
+
+Interface Advanced
+hdr_size=92
+hdr_lba_self=1
+hdr_lba_alt=250069679 (expected 250069679)
+hdr_lba_start=34
+hdr_lba_end=250069646
+hdr_lba_table=2
+hdr_entries=128
+hdr_entsz=128
+ 1 P EFI System                  2048    1050623    1048576 [EFI System Partition]
+ 2 P Linux filesys. data      1050624  250068991  249018368
+Incomplete image created.
+SIGHUP detected! TestDisk has been killed.
