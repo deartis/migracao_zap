@@ -29,6 +29,7 @@ class WhatsGwService
             'message_body' => $messageBody,
         ]);
 
+        Log::info($response->json());
         return $response->json();
     }
 

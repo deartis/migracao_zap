@@ -5,8 +5,8 @@ namespace App\Jobs;
 use App\Models\EnvioProgresso;
 use App\Models\Historic;
 use App\Services\PhoneValidator;
-use App\Services\WhatsAppService;
 use App\Services\WhatsGwService;
+use File;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -22,94 +22,67 @@ class MensagensEmMassaJob implements ShouldQueue
     /**
      * Número de tentativas máximas do job
      */
-    public $tries = 3;
+    public int $tries = 3;
 
     /**
      * Tempo de espera antes de nova tentativa em segundos
      */
-    public $backoff = 60;
+    public int $backoff = 60;
 
     /**
      * Timeout do job em segundos
      */
-    public $timeout = 600;  // 10 minutos
+    public int $timeout = 600; // 10 minutos
 
     /**
      * Lista de contatos para envio
      *
      * @var array
      */
-    protected $contatos;
-
-    /**
-     * Token de autorização
-     *
-     * @var string
-     */
-    protected $token;
+    protected array $contatos;
 
     /**
      * ID do usuário
      *
      * @var int
      */
-    protected $idUser;
-
-    /**
-     * Lista de erros
-     *
-     * @var array
-     */
-    protected $errors;
+    protected int $idUser;
 
     /**
      * Aqruivo para enviar com a imagem
      *
      * @var file
      */
-    protected $pathArquivo;
+    protected  $pathArquivo;
 
     /**
      * Status do usuário
      *
      * @var array
      */
-    protected $stt;
-
-    /**
-     * Serviço de WhatsApp
-     *
-     * @var WhatsAppService
-     */
-    protected $whatsappService;
-
-    protected $whatsGwService;
+    protected array $stt;
+    protected WhatsGwService $whatsGwService;
 
     /**
      * Tamanho do lote para processamento
      *
      * @var int
      */
-    protected $tamanhoBatch = 15;
+    protected int $tamanhoBatch = 15;
 
     /**
      * Construtor do job
      *
      * @param array $contatos Lista de contatos para envio
-     * @param string $token Token de autenticação
      * @param int $idUser ID do usuário
      * @param array $stt Status do usuário e limites
-     * @param array $errors Lista de erros pré-existentes (opcional)
      */
-    public function __construct(array $contatos, string $token, int $idUser, array $stt, array $errors = [], $pathArquivo)
+    public function __construct(array $contatos, int $idUser, array $stt, $pathArquivo)
     {
         $this->contatos = $contatos;
-        $this->token = $token;
         $this->idUser = $idUser;
         $this->stt = $stt;
-        $this->errors = $errors;
         $this->pathArquivo = $pathArquivo;
-
 
 
         // Cria a instância do service já com o token (mantendo compatibilidade)
@@ -165,7 +138,6 @@ class MensagensEmMassaJob implements ShouldQueue
     {
         // Busca o progresso existente ou cria um novo
         $conditions = ['user_id' => $this->idUser];
-
         /*Log::info("Processando lote {$numeroLote}/{$totalLotes}", [
             'contatos_no_lote' => count($lote),
             'user_id' => $this->idUser,
@@ -223,7 +195,7 @@ class MensagensEmMassaJob implements ShouldQueue
 
             // Delay aleatório entre envios para evitar bloqueios
             if ($indice < count($lote) - 1) {
-                sleep(rand(30, 33));  // Espera entre 30 e 33 segundos
+                sleep(rand(30, 32));  // Espera entre 30 e 33 segundos
             }
         }
 
@@ -245,25 +217,23 @@ class MensagensEmMassaJob implements ShouldQueue
     protected function enviarMensagem(array $contato): void
     {
         $name = $contato['name'] ?? 'desconhecido';
-
         try {
             $validate = PhoneValidator::validate($contato['number']);
             $validateNumberUser = PhoneValidator::validate($this->stt['userm']->number);
             $contatoMsg = $validate['number'];
             $numberValid = $validate['valid'];
+
             $mensagem = $contato['message'] ?? '';  // ou template, conforme estrutura
             $caminhoCompleto = storage_path('app/public/' . $this->pathArquivo);
 
             if ($numberValid) {
-
-                Log::info($numberValid);
-
                 if (is_file($caminhoCompleto)) {
                     // Lê o arquivo e converte para base64
                     $arquivoBase64 = base64_encode(file_get_contents($caminhoCompleto));
                     $arquivoNome = basename($caminhoCompleto);
                     $arquivoMime = mime_content_type($caminhoCompleto);
 
+                    Log::info("Mensagem enviada para {$validateNumberUser['number']} com arquivo");
                     $this->whatsGwService->sendFile(
                         $validateNumberUser['number'],  // seu número (remetente)
                         $contatoMsg,  // número do destinatário
@@ -272,9 +242,9 @@ class MensagensEmMassaJob implements ShouldQueue
                         $arquivoMime,  // mimetype
                         $mensagem  // legenda opcional
                     );
-
                 } else {
-                    Log::error("Arquivo não encontrado: $caminhoCompleto");
+                    //Log::error("Arquivo não encontrado: $caminhoCompleto");
+                    Log::info("Mensagem enviada para $contatoMsg SEM arquivo");
                     $this->whatsGwService->sendMessage(
                         $validateNumberUser['number'],  // seu número (remetente)
                         $contatoMsg,
@@ -283,6 +253,7 @@ class MensagensEmMassaJob implements ShouldQueue
                 }
                 $this->saveHistoric($this->idUser, $contatoMsg, 'success', $name, '-');
             } else {
+                Log::info("Mensagem Não enviada, Erro: {$validate['message']}");
                 // Número inválido, registra erro
                 $contatoMsg = $validate['number'] ?? 'desconhecido';
                 Log::error("Descrição do Erro: ", [$validate['message']]);
@@ -291,81 +262,10 @@ class MensagensEmMassaJob implements ShouldQueue
         } catch (Exception $e) {
             $contactNumber = $contato['number'] ?? 'desconhecido';
 
-            Log::error($e->getMessage());
+            Log::error("Testando msg: ", [$e->getMessage()]);
             $this->saveHistoric($this->idUser, $contactNumber, 'error', $name, 'Erro desconhecido ao enviar mensagem');
         }
     }
-
-    /*protected function enviarMensagem(array $contato): void
-    {
-        Log::info($contato);
-        try {
-            // Verificação para garantir que o número está no formato correto
-            $validate = PhoneValidator::validate($contato['number']);
-            Log::info('========================================================');
-            Log::info($validate);
-            Log::info('========================================================');
-            $contatoMsg = $validate['number'];
-            $numberValid = $validate['valid'];
-
-            /*if (!empty($number) && !str_contains($number, '@c.us')) {
-                $number .= '@c.us';
-            }
-
-            Log::info("Caminho do arquivo: $this->pathArquivo");
-
-            if ($this->pathArquivo) {
-                $response = $this->whatsGwService->sendFile(
-                    numeroUsuario(), // Número do usuário formatado
-                    $contatoMsg,
-                    $arquivo['base64'],
-                    $arquivo['nome'],
-                    $arquivo['mimetype'],
-                    $mensagem
-                );
-            } else {
-                $response = $this->whatsGwService->sendMessage(
-                    $numero['number'],
-                    $contato,
-                    $mensagem
-                );
-            }
-
-            // $response = $this->whatsGw->sendFile();
-
-            /*$response = $this->whatsappService->sendMessage(
-                $number,                    // Número formatado
-                $contato['message'],        // Mensagem
-                $contato['media'] ?? null   // Mídia (opcional)
-            );*/
-
-    /*$contactNumber = $contato['number'] ?? 'desconhecido';
-            $contactName = $contato['name'] ?? 'desconhecido';
-
-            if ($response->successful()) {
-                Log::info("Mensagem enviada com sucesso para: {$this->mascaraNumeroCelular($contactNumber)}");
-                // Salva histórico de sucesso
-                $this->saveHistoric($this->idUser, $contactNumber, 'success', $contactName);
-            } else {
-                $erro = 'invalid_number';
-                Log::error("Falha ao enviar para {$this->mascaraNumeroCelular($contactNumber)}: " . $erro);
-                $this->errors[] = $contactNumber;
-
-                // Salva histórico de erro
-                $this->saveHistoric($this->idUser, $contactNumber, 'error', $contactName, $erro);
-            }
-        } catch (Exception $e) {
-            $name = $contato['name'] ?? 'desconhecido';
-            $contactNumber = $contato['number'] ?? 'desconhecido';
-
-            Log::error("Erro ao enviar para $name ({$this->mascaraNumeroCelular($contactNumber)}): " . $e->getMessage());
-            $this->errors[] = $contactNumber;
-
-            // Salva histórico de erro
-            $this->saveHistoric($this->idUser, $contactNumber, 'error', $name, $e->getMessage());
-        }
-    }*/
-
     /**
      * Verifica se o usuário tem limite disponível antes de iniciar
      *

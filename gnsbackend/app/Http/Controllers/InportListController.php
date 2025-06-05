@@ -6,6 +6,7 @@ use App\Helpers\ArrayDataDetector;
 use App\Jobs\MensagensEmMassaJob;
 use App\Models\EnvioProgresso;
 use App\Models\Historic;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -83,18 +84,18 @@ class InportListController extends Controller
             $erros = $this->verificaContatos($contatos);
             $contatosProcessados = $this->processarContatos($contatos);
 
+            //Log::info($contatosProcessados);
+
             // Você pode passar $pathArquivo para o Job se desejar
             MensagensEmMassaJob::dispatch(
                 $contatosProcessados,
-                token_user(),
                 auth()->id(),
                 $statusUsuario,
-                $erros,
-                $pathArquivo ? $pathArquivo : null,
+                $pathArquivo ?? null,
             );
 
             return response()->json(['message' => 'Mensagens sendo executadas...']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Erro ao processar contatos', [
                 'erro' => $e->getMessage(),
                 'usuario_id' => auth()->id()
@@ -118,7 +119,7 @@ class InportListController extends Controller
         $temLimite = $usuario->msgLimit > $usuario->sendedMsg;
 
         // Verifica se o usuário está ativo/habilitado (ajuste conforme sua aplicação)
-        $estaHabilitado = $usuario->status === 'active';
+        $estaHabilitado = $usuario->enabled === true;
 
         return [
             'userm' => $usuario,
