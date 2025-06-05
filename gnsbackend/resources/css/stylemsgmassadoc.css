@@ -1,0 +1,82 @@
+.step-container {
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.step-active {
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.2);
+}
+
+.step-inactive {
+    opacity: 0.7;
+}
+
+.step-completed {
+    border-left: 5px solid #28a745;
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.step-active .step-number {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.step-completed .step-number {
+    background-color: #28a745;
+    color: white;
+}
+
+.placeholder-badge {
+    cursor: pointer;
+    margin: 5px;
+    transition: all 0.2s;
+}
+
+.placeholder-badge:hover {
+    transform: translateY(-2px);
+}
+
+#fileDropArea {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 25px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#fileDropArea:hover {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+#fileInput {
+    display: none;
+}
+
+.preview-container {
+    max-height: 250px;
+    overflow-y: auto;
+    overflow-x: scroll;
+    margin-top: 15px;
+}
