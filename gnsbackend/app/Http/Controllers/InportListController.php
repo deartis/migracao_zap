@@ -31,7 +31,7 @@ class InportListController extends Controller
     public function enviaMensagemEmMassaLista(Request $request): JsonResponse
     {
         Log::info('===================== Log do CTRL ======================');
-    
+
         // Decodificar o campo JSON chamado 'data'
         $data = json_decode($request->input('data'), true);  // <- Aqui é importante
 
@@ -69,7 +69,7 @@ class InportListController extends Controller
 
         auth()->user()->update(['lastMessage' => $template]);
 
-        // 🟡 Aqui você trata o arquivo (se houver)
+        // Aqui você trata o arquivo (se houver)
         if ($request->hasFile('arquivo')) {
             $arquivo = $request->file('arquivo');
 
