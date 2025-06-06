@@ -33,4 +33,38 @@ class WhatsAppController extends Controller
 
         // Chama a API do whatsgw para gerar p QRCode
     }
+
+    public function dashboard(Request $request)
+    {
+        // Verifica se o usuário já está conectado
+        $activeSession = Instances::where('user_id', auth()->id())
+            ->where('status', 'connected')
+            ->first();
+
+        if ($activeSession) {
+            return redirect()->route('home')->with('error', 'Você já está conectado!');
+        }
+
+        // Chama a API do whatsgw para gerar o QR Code
+        $whatsAppService = new WhatsAppService();
+        $qrCodeData = $whatsAppService->generateQRCode();
+
+        return view('pages.dashboard', compact('qrCodeData'));
+    }
+
+    public function status(Request $request)
+    {
+        // Verifica se o usuário já está conectado
+        $activeSession = Instances::where('user_id', auth()->id())
+            ->where('status', 'connected')
+            ->first();
+
+        if ($activeSession) {
+            return response()->json(['status' => 'connected']);
+        }
+
+        // Se não estiver conectado, retorna o status desconectado
+        return response()->json(['status' => 'disconnected']);
+    }
 }
+

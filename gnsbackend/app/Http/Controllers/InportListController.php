@@ -69,7 +69,7 @@ class InportListController extends Controller
 
         auth()->user()->update(['lastMessage' => $template]);
 
-        // 🟡 Aqui você trata o arquivo (se houver)
+        // Aqui você trata o arquivo (se houver)
         if ($request->hasFile('arquivo')) {
             $arquivo = $request->file('arquivo');
 
@@ -84,12 +84,12 @@ class InportListController extends Controller
             $contatosProcessados = $this->processarContatos($contatos);
 
             // Você pode passar $pathArquivo para o Job se desejar
+            Log::info($statusUsuario);
             MensagensEmMassaJob::dispatch(
                 $contatosProcessados,
                 auth()->id(),
                 $statusUsuario,
-                $erros,
-                $pathArquivo ? $pathArquivo : null,
+                $pathArquivo ?? null,
             );
 
             return response()->json(['message' => 'Mensagens sendo executadas...']);

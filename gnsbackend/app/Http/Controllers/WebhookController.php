@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Instances;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,7 +11,6 @@ use Illuminate\Support\Facades\Storage;
 
 class WebhookController extends Controller
 {
-
     public function receberQrCode(Request $request)
     {
         Log::info('Webhook QRCode recebido: ', $request->all());
@@ -32,7 +32,21 @@ class WebhookController extends Controller
 
         Log::info("QR Code salvo em: $filename");
 
+        // Atualiza a instância com o caminho do QR Code
+        $instancia = Instances::where('user_id', auth()->id())
+            ->where('instance_id', $instanciaId)
+            ->first();
+
+        if ($instancia) {
+            //Atualiza a instância com o status de conexão
+            $instancia->updateOrCreate([
+                'connected' => false,
+                'token' => null,
+            ]);
+        } else {
+            Log::error("Instância com ID $instanciaId não encontrada.");
+        }
+
         return response()->json(['status' => 'ok']);
     }
-    
 }

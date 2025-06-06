@@ -50,9 +50,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/page/multiple-msg', [MultipleContactMsgController::class, 'index'])->name('page.multi.msg');
 
         Route::get('/dashboard', [WhatsAppController::class, 'dashboard'])->name('dashboard');
-    //});
-
     });
+
+    Route::get('/whatsapp/status', [WhatsAppController::class, 'status'])->name('whatsapp.status');
 
     Route::get('/connection', [ConnectionController::class, 'index'])->name('page.connection');
     Route::get('/conectarwgw', [ConnectionController::class, 'conectarWgw']);

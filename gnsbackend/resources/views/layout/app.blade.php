@@ -18,6 +18,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body>
     @include('parts.sidebar')
     <!-- Main Content -->
@@ -25,6 +26,13 @@
         @include('parts.header')
         <div class="container-fluid">
             <div>
+                @if (session('success'))
+                    <x-alert type="success" :message="session('success')" />
+                @endif
+
+                @if (session('error'))
+                    <x-alert type="error" :message="session('error')" />
+                @endif
                 @yield('content')
             </div>
         </div>

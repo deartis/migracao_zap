@@ -1,14 +1,14 @@
 @extends('layout.app')
 
 @section('content')
-    @if(session('success'))
+    {{-- @if (session('success'))
         <x-alert type="success" :message="session('success')"/>
     @endif
 
-    @if(session('error'))
+    @if (session('error'))
         <x-alert type="error" :message="session('error')"/>
     @endif
-
+ --}}
     <div class="container mt-5 d-flex justify-content-center">
         <div class="card shadow-lg p-4" style="width: 400px;">
             <h4 class="mb-3 text-center">Conectar WhatsApp</h4>
@@ -22,14 +22,14 @@
 
             <div class="d-grid gap-2">
 
-                    <!-- Botão de debug (remover em produção) -->
-                    <button id="btn-nova-conexao" class="btn btn-info btn-sm" onclick="novaConexaoGWG()">
-                        Nova conexão
-                    </button>
+                <!-- Botão de debug (remover em produção) -->
+                <button id="btn-nova-conexao" class="btn btn-info btn-sm" onclick="novaConexaoGWG()">
+                    Nova conexão
+                </button>
 
-                    <button id="btn-resetar" class="btn btn-warning btn-sm d-none mt-2">
-                        🔁 Resetar QR Code
-                    </button>
+                <button id="btn-resetar" class="btn btn-warning btn-sm d-none mt-2">
+                    🔁 Resetar QR Code
+                </button>
 
             </div>
         </div>
@@ -71,7 +71,7 @@
             }
         });
 
-        function novaConexaoGWG(){
+        function novaConexaoGWG() {
 
         }
 
@@ -80,7 +80,8 @@
                 const res = await axios.get('/gerar-qrcode');
                 const qrBase64 = res.data.qrcode_base64;
 
-                qrContainer.innerHTML = `<img src="${qrBase64}" alt="QR Code" class="img-fluid" style="max-width: 300px;">`;
+                qrContainer.innerHTML =
+                    `<img src="${qrBase64}" alt="QR Code" class="img-fluid" style="max-width: 300px;">`;
                 qrContainer.classList.remove('d-none'); // Garante que apareça se estiver oculto
             } catch (error) {
                 qrContainer.innerHTML = `<p class="text-info">⏳ QR Code ainda não disponível. Aguarde...</p>`;
@@ -127,12 +128,9 @@
         verificarStatus();
         carregarQRCode();
     </script>
-
-
-
 @endsection
 
-{{--<script>
+{{-- <script>
     // Verifica se o CSRF token existe antes de configurar
     const csrfToken = document.querySelector('meta[name="csrf-token"]');
 
@@ -402,12 +400,12 @@
             }
         }, 500);
     }
-</script>--}}
-{{--<div>
+</script> --}}
+{{-- <div>
 
     <h1 class="text-center">QRCODE</h1>
     <hr>
-    @if(!$haInstancia)
+    @if (!$haInstancia)
         <div class="text-center">
             <div>
                 <p>Seja bem vindo a sua primeira conexão!</p>
@@ -416,11 +414,11 @@
 
         </div>
     @endif
-</div>--}}
+</div> --}}
 
 
 
-{{--<div class="container mt-5 d-flex justify-content-center">
+{{-- <div class="container mt-5 d-flex justify-content-center">
         <div class="card shadow-lg p-4" style="width: 400px;">
             <h4 class="mb-3 text-center">Conectar WhatsApp</h4>
 
@@ -440,8 +438,8 @@
                 </button>
             </div>
         </div>
-    </div>--}}
-{{--<script>
+    </div> --}}
+{{-- <script>
     // Verifica se o CSRF token existe antes de configurar
     const csrfToken = document.querySelector('meta[name="csrf-token"]');
 
@@ -711,4 +709,4 @@
             }
         }, 500);
     }
-</script>--}}
+</script> --}}

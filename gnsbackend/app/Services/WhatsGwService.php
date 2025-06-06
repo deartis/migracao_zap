@@ -85,4 +85,19 @@ class WhatsGwService
         Log::info("Nova Intsnacia: {$dados['w_instancia_id']}");
         return $response->json();
     }
+
+    public function getStatus($instanceId)
+    {
+        try {
+            $response = Http::asForm()->post($this->apiUrl . '/GetStatus', [
+                'apikey' => $this->apiKey,
+                'w_instancia_id' => $instanceId,
+            ]);
+
+            return $response->json();
+        } catch (Exception $exception) {
+            Log::error("Erro ao obter status: ", [$exception->getMessage()]);
+            return ['status' => 'error', 'message' => 'Erro ao obter status da instância'];
+        }
+    }
 }

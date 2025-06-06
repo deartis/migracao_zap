@@ -3,13 +3,6 @@
 @section('title_page', 'Bem Vindo ' . uniqName(auth()->user()->name) . '!')
 @section('content')
 
-    @if(session('success'))
-        <x-alert type="success" :message="session('success')"/>
-    @endif
-
-    @if(session('error'))
-        <x-alert type="error" :message="session('error')"/>
-    @endif
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-4 mb-3 mb-md-0">
