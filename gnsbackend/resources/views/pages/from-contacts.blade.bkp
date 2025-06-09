@@ -1,0 +1,467 @@
+@extends('layout.app')
+@section('content')
+    <div class="container py-4">
+        <div class="">
+            <h2 class="text-center mb-4">Envio de mensagem em massa - Chats Ativos</h2>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row">
+                    <!-- Card de chats selecionados (à esquerda) -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Chats selecionados</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="chats-selecionados-wrapper" style="max-height: 300px; overflow-y: auto;">
+                                    <ul class="list-group list-group-flush" id="chats-selecionados-lista">
+                                        <!-- Chats selecionados serão inseridos aqui via JavaScript -->
+                                        <li class="list-group-item text-center text-muted">
+                                            Nenhum chat selecionado
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-light">
+                                <span class="badge bg-success" id="contador-selecionados-card">0 selecionados</span>
+                                <button class="btn btn-sm btn-outline-danger float-end" id="limpar-selecao">
+                                    <i class="bi bi-trash"></i> Limpar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card da mensagem (à direita) -->
+                    <div class="col-md-8 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Mensagem</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="row">
+                                        <div class="">
+                                            <!-- Botão para importar arquivo -->
+                                            <div class="mb-3">
+                                                <!-- Input file original (oculto) -->
+                                                <input type="file" class="input-file-hidden" id="arquivo">
+
+                                                <!-- Botão personalizado com ícone -->
+                                                <button type="button" class="btn btn-primary" id="custom-file-button">
+                                                    <i class="bi bi-paperclip"></i>Adicionar arquivo
+                                                </button>
+
+                                                <!-- Elemento para mostrar o nome do arquivo selecionado -->
+                                                <span id="file-chosen">Nenhum arquivo selecionado</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <textarea id="mensagem" class="form-control" rows="6" placeholder="Digite sua mensagem..."></textarea>
+                                    <div class="form-text">Esta mensagem será enviada para todos os chats selecionados.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <!-- Botão para carregar chats ativos -->
+                        <div class="">
+                            <button class="btn btn-primary" id="btn-importar-chats" data-bs-toggle="modal"
+                                    data-bs-target="#modalChats">
+                                <i class="bi bi-chat-dots me-1"></i>Carregar chats
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <button class="btn btn-success" id="btn-enviar-mensagem">
+                            <i class="bi bi-send-fill me-1"></i> Enviar mensagem
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para seleção de chats -->
+    <div class="modal fade" id="modalChats" tabindex="-1" aria-labelledby="modalChatsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalChatsLabel">Selecionar Chats Ativos</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Barra de pesquisa -->
+                    <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="pesquisar-chats"
+                               placeholder="Pesquisar chats...">
+                    </div>
+
+                    <!-- Cabeçalho da lista de chats -->
+                    <div class="d-flex justify-content-between align-items-center mb-2 px-2">
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="checkbox" id="selecionar-todos">
+                            <label class="form-check-label fw-bold" for="selecionar-todos">
+                                Selecionar todos os chats
+                            </label>
+                        </div>
+                        <span class="badge bg-primary" id="contador-selecionados-modal">0 selecionados</span>
+                    </div>
+
+                    <!-- Lista de chats -->
+                    <div id="chats-wrapper" style="max-height: 50vh; overflow-y: auto;">
+                        <ul class="list-group list-group-flush" id="chats-checkboxes">
+                            <!-- Chats serão inseridos aqui via JavaScript -->
+                        </ul>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirmar-selecao" data-bs-dismiss="modal">Confirmar
+                        seleção</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{--<script>
+    // Configurações do WhatsGW - Substitua pelos seus valores
+    window.whatsgwApiUrl = "{{ config('whatsgw.apiUrl') }}"; // URL base da API
+    window.whatsgwApiToken = 'seu_token_aqui'; // Se usar autenticação Bearer
+    window.whatsgwApiKey = "{{ config('whatsgw.apiKey') }}"; // Sua API Key
+    window.whatsgwPhoneNumber = "{{ auth()->user()->number }}"; // Seu número de telefone
+</script>--}}
+
+{{--<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let chatsDisponiveis = [];
+        let chatsSelecionados = [];
+
+        // Elementos DOM
+        const btnImportarChats = document.getElementById('btn-importar-chats');
+        const chatsCheckboxes = document.getElementById('chats-checkboxes');
+        const pesquisarChats = document.getElementById('pesquisar-chats');
+        const selecionarTodos = document.getElementById('selecionar-todos');
+        const contadorSelecionadosModal = document.getElementById('contador-selecionados-modal');
+        const contadorSelecionadosCard = document.getElementById('contador-selecionados-card');
+        const chatsSelecionadosLista = document.getElementById('chats-selecionados-lista');
+        const confirmarSelecao = document.getElementById('confirmar-selecao');
+        const limparSelecao = document.getElementById('limpar-selecao');
+        const btnEnviarMensagem = document.getElementById('btn-enviar-mensagem');
+        const customFileButton = document.getElementById('custom-file-button');
+        const arquivoInput = document.getElementById('arquivo');
+        const fileChosen = document.getElementById('file-chosen');
+
+        // Carregar chats quando o botão for clicado
+        btnImportarChats.addEventListener('click', function() {
+            carregarChats();
+        });
+
+        // Função para carregar chats do servidor
+        function carregarChats() {
+            // Mostrar loading
+            chatsCheckboxes.innerHTML = '<li class="list-group-item text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Carregando...</span></div> Carregando chats...</li>';
+
+            fetch('/chats-ativos')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        chatsDisponiveis = data.chats;
+                        exibirChats(chatsDisponiveis);
+                    } else {
+                        chatsCheckboxes.innerHTML = '<li class="list-group-item text-center text-danger">Erro ao carregar chats</li>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    chatsCheckboxes.innerHTML = '<li class="list-group-item text-center text-danger">Erro ao carregar chats</li>';
+                });
+        }
+
+        // Função para exibir chats na lista
+        function exibirChats(chats) {
+            if (chats.length === 0) {
+                chatsCheckboxes.innerHTML = '<li class="list-group-item text-center text-muted">Nenhum chat encontrado</li>';
+                return;
+            }
+
+            let html = '';
+            chats.forEach((chat, index) => {
+                const chatId = chat.id;
+                const chatNome = formatarNomeChat(chat);
+                const isChecked = chatsSelecionados.some(c => c.id === chatId);
+
+                html += `
+                <li class="list-group-item">
+                    <div class="form-check">
+                        <input class="form-check-input chat-checkbox" type="checkbox"
+                               value="${chatId}" id="chat-${index}" ${isChecked ? 'checked' : ''}>
+                        <label class="form-check-label" for="chat-${index}">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">${chatNome}</div>
+                                    <small class="text-muted">${chatId}</small>
+                                </div>
+                                ${chat.contact.isGroup ? '<span class="badge bg-info ms-2">Grupo</span>' : '<span class="badge bg-secondary ms-2">Individual</span>'}
+                            </div>
+                        </label>
+                    </div>
+                </li>
+            `;
+            });
+
+            chatsCheckboxes.innerHTML = html;
+
+            // Adicionar event listeners aos checkboxes
+            document.querySelectorAll('.chat-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', atualizarSelecao);
+            });
+
+            atualizarContadores();
+        }
+
+        // Função para formatar nome do chat
+        function formatarNomeChat(chat) {
+            if (chat.contact.name) return chat.contact.name;
+            if (chat.contact.pushname) return chat.contact.pushname;
+            if (chat.contact.formattedName) return chat.contact.formattedName;
+            if (chat.contact.shortName) return chat.contact.shortName;
+
+            // Se não tem nome, usar o ID formatado
+            return formatarNumeroTelefone(chat.id);
+        }
+
+        // Função para formatar número de telefone
+        function formatarNumeroTelefone(numero) {
+            // Remove caracteres não numéricos
+            const nums = numero.replace(/\D/g, '');
+
+            // Se for número brasileiro (55 + DDD + número)
+            if (nums.startsWith('55') && nums.length >= 12) {
+                const ddd = nums.substring(2, 4);
+                const tel = nums.substring(4);
+                return `+55 (${ddd}) ${tel.substring(0, tel.length-4)}-${tel.substring(tel.length-4)}`;
+            }
+
+            return numero;
+        }
+
+        // Função para atualizar seleção
+        function atualizarSelecao() {
+            const checkboxesMarcados = document.querySelectorAll('.chat-checkbox:checked');
+            chatsSelecionados = [];
+
+            checkboxesMarcados.forEach(checkbox => {
+                const chatId = checkbox.value;
+                const chat = chatsDisponiveis.find(c => c.id === chatId);
+                if (chat) {
+                    chatsSelecionados.push(chat);
+                }
+            });
+
+            atualizarContadores();
+            atualizarCheckboxTodos();
+        }
+
+        // Função para atualizar contadores
+        function atualizarContadores() {
+            const total = chatsSelecionados.length;
+            contadorSelecionadosModal.textContent = `${total} selecionados`;
+            contadorSelecionadosCard.textContent = `${total} selecionados`;
+        }
+
+        // Função para atualizar checkbox "Selecionar todos"
+        function atualizarCheckboxTodos() {
+            const totalChats = chatsDisponiveis.length;
+            const totalSelecionados = chatsSelecionados.length;
+
+            if (totalSelecionados === 0) {
+                selecionarTodos.indeterminate = false;
+                selecionarTodos.checked = false;
+            } else if (totalSelecionados === totalChats) {
+                selecionarTodos.indeterminate = false;
+                selecionarTodos.checked = true;
+            } else {
+                selecionarTodos.indeterminate = true;
+            }
+        }
+
+        // Event listener para "Selecionar todos"
+        selecionarTodos.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.chat-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            atualizarSelecao();
+        });
+
+        // Pesquisa de chats
+        pesquisarChats.addEventListener('input', function() {
+            const termo = this.value.toLowerCase();
+            if (termo === '') {
+                exibirChats(chatsDisponiveis);
+            } else {
+                const chatsFiltrados = chatsDisponiveis.filter(chat => {
+                    const nome = formatarNomeChat(chat).toLowerCase();
+                    const id = chat.id.toLowerCase();
+                    return nome.includes(termo) || id.includes(termo);
+                });
+                exibirChats(chatsFiltrados);
+            }
+        });
+
+        // Confirmar seleção
+        confirmarSelecao.addEventListener('click', function() {
+            exibirChatsSelecionados();
+        });
+
+        // Função para exibir chats selecionados no card
+        function exibirChatsSelecionados() {
+            if (chatsSelecionados.length === 0) {
+                chatsSelecionadosLista.innerHTML = '<li class="list-group-item text-center text-muted">Nenhum chat selecionado</li>';
+                return;
+            }
+
+            let html = '';
+            chatsSelecionados.forEach(chat => {
+                const chatNome = formatarNomeChat(chat);
+                html += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold">${chatNome}</div>
+                        <small class="text-muted">${chat.id}</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger remover-chat" data-chat-id="${chat.id}">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </li>
+            `;
+            });
+
+            chatsSelecionadosLista.innerHTML = html;
+
+            // Adicionar event listeners para remover chats individuais
+            document.querySelectorAll('.remover-chat').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const chatId = this.getAttribute('data-chat-id');
+                    removerChatSelecionado(chatId);
+                });
+            });
+        }
+
+        // Função para remover chat selecionado
+        function removerChatSelecionado(chatId) {
+            chatsSelecionados = chatsSelecionados.filter(chat => chat.id !== chatId);
+            exibirChatsSelecionados();
+            atualizarContadores();
+
+            // Desmarcar checkbox se estiver visível
+            const checkbox = document.querySelector(`.chat-checkbox[value="${chatId}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+            }
+            atualizarCheckboxTodos();
+        }
+
+        // Limpar seleção
+        limparSelecao.addEventListener('click', function() {
+            chatsSelecionados = [];
+            exibirChatsSelecionados();
+            atualizarContadores();
+
+            // Desmarcar todos os checkboxes
+            document.querySelectorAll('.chat-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            atualizarCheckboxTodos();
+        });
+
+        // Funcionalidade do botão de arquivo personalizado
+        customFileButton.addEventListener('click', function() {
+            arquivoInput.click();
+        });
+
+        arquivoInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileChosen.textContent = this.files[0].name;
+            } else {
+                fileChosen.textContent = 'Nenhum arquivo selecionado';
+            }
+        });
+
+        // Enviar mensagem
+        btnEnviarMensagem.addEventListener('click', function() {
+            const mensagem = document.getElementById('mensagem').value.trim();
+            const arquivo = arquivoInput.files[0];
+
+            if (chatsSelecionados.length === 0) {
+                alert('Selecione pelo menos um chat para enviar a mensagem.');
+                return;
+            }
+
+            if (!mensagem && !arquivo) {
+                alert('Digite uma mensagem ou selecione um arquivo para enviar.');
+                return;
+            }
+
+            enviarMensagem(mensagem, arquivo);
+        });
+
+        // Função para enviar mensagem
+        function enviarMensagem(mensagem, arquivo) {
+            const formData = new FormData();
+            formData.append('mensagem', mensagem);
+            formData.append('chats', JSON.stringify(chatsSelecionados.map(chat => chat.id)));
+
+            if (arquivo) {
+                formData.append('arquivo', arquivo);
+            }
+
+            // Desabilitar botão durante envio
+            btnEnviarMensagem.disabled = true;
+            btnEnviarMensagem.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Enviando...';
+
+            fetch('/enviar-mensagem-massa', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Mensagem enviada com sucesso!');
+                        // Limpar formulário
+                        document.getElementById('mensagem').value = '';
+                        arquivoInput.value = '';
+                        fileChosen.textContent = 'Nenhum arquivo selecionado';
+                    } else {
+                        alert('Erro ao enviar mensagem: ' + (data.message || 'Erro desconhecido'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao enviar mensagem. Tente novamente.');
+                })
+                .finally(() => {
+                    // Reabilitar botão
+                    btnEnviarMensagem.disabled = false;
+                    btnEnviarMensagem.innerHTML = '<i class="bi bi-send-fill me-1"></i> Enviar mensagem';
+                });
+        }
+    });
+</script>--}}
+@endsection
+
+
+
+
