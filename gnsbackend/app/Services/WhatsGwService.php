@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Events\ConnectionStatusChanged;
 use App\Models\Instances;
+use Endroid\QrCode\Logo\Logo;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Services\PhoneValidator;
 
 class WhatsGwService
 {
@@ -53,22 +56,32 @@ class WhatsGwService
     public function newStance()
     {
         $user = auth()->user();
+
         try {
+
             $response = Http::asForm()->post(config('whatsgw.apiUrl').'/NewInstance', [
                 'apikey' => $this->apiKey,
                 'type' => '1',
             ]);
 
             $dados = $response->json();
+
             Log::info($dados);
             Log::info('------------------------------------------------------------------');
 
-            if($dados['result'] === 'success'){
+            $instanciaId = $dados['w_instancia_id'];
 
+            if($dados['result'] === 'success'){
+                $filename = "qrcodes/qrcode_$instanciaId.png";
+                Log::info("Salvou", [
+                    'filename' => $filename,
+                    'instancia' => $instanciaId,
+                ]);
                 Instances::updateOrCreate([
                     'user_id' => $user->id,
                     'instance_id' => $dados['w_instancia_id'],
                     'token' => $user->id,
+                    'qrcode' => $filename
                 ]);
 
                 Log::info("Salvando o ID da Instância no Banco");
@@ -89,15 +102,39 @@ class WhatsGwService
     public function getStatus($instanceId)
     {
         try {
-            $response = Http::asForm()->post($this->apiUrl . '/GetStatus', [
+            $response = Http::asForm()->post($this->apiUrl . '/PhoneState', [
                 'apikey' => $this->apiKey,
                 'w_instancia_id' => $instanceId,
             ]);
+            Log::info('=========================');
+            Log::info($response);
+            Log::info('=========================');
 
             return $response->json();
+
         } catch (Exception $exception) {
             Log::error("Erro ao obter status: ", [$exception->getMessage()]);
             return ['status' => 'error', 'message' => 'Erro ao obter status da instância'];
+        }
+    }
+
+    public function getActiveChats(){
+        try{
+            $number = PhoneValidator::validate(auth()->user()->number);
+
+            $response = Http::asForm()->post($this->apiUrl . '/GetAllChats', [
+                'apikey' => $this->apiKey,
+                'phone_number' => $number['number'],
+            ]);
+
+            $data = $response->json();
+            //Log::info("Chats ativos: ", [$number,$data]);
+
+            return $data;
+
+        } catch (Exception $exception) {
+            Log::error("Erro ao obter chats ativos: ", [$exception->getMessage()]);
+            return ['status' => 'error', 'message' => 'Erro ao obter chats ativos'];
         }
     }
 }

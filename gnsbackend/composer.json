@@ -7,15 +7,16 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "ext-fileinfo": "*",
         "doctrine/dbal": "^4.2",
         "endroid/qr-code": "^6.0",
         "guzzlehttp/guzzle": "^7.9",
         "laravel-lang/common": "^6.7",
         "laravel/fortify": "^1.25",
         "laravel/framework": "^12.0",
+        "laravel/reverb": "^1.0",
         "laravel/tinker": "^2.10.1",
-        "maatwebsite/excel": "^3.1",
-        "ext-fileinfo": "*"
+        "maatwebsite/excel": "^3.1"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.5",

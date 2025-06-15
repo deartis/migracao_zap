@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\ConnectionStatusChanged;
 use App\Http\Controllers\ConnectionController;
 use App\Http\Controllers\HistoricController;
 use App\Http\Controllers\HomeController;
@@ -23,9 +24,11 @@ Route::middleware(['auth'])->get('/whatsapp/token', function () {
 
 // Rota para receber QR Code via Webhook
 
-//Route::post('/webhookqrcode', [WebhookController::class, 'receberQrCode'])->name('webhook.qrcode');
+Route::post('/webhookqrcode', [WebhookController::class, 'webhooks'])->name('webhook.qrcode');
 
-Route::post('/webhookqrcode', [WebhookController::class, 'receberQrCode'])->name('webhook.qrcode');
+Route::get('/teste-reverb', function() {
+    return view('teste-reverb');
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -45,25 +48,41 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/get-tpl', [InportListController::class, 'getTemplate']);
         Route::get('/envio-progresso', [InportListController::class, 'envioProgresso']);
         Route::post('/reseta-progresso', [InportListController::class, 'resetaProgresso']);
-        Route::post('/envia-mensagem-em-massa-contstos', [MultipleContactMsgController::class, 'enviaMensagemContatosWhatsapp']);
+        Route::post('/envia-mensagem-em-massa-contatos', [MultipleContactMsgController::class, 'enviaMensagemContatosWhatsapp'])->name('enviar.mensagem.massa.contatos');
+
+        Route::get('/chats-ativos', function () {
+            $userId = auth()->id(); // ou como você obtém o ID do usuário
+            $chats = \Illuminate\Support\Facades\Cache::get("chats_ativos_$userId", []);
+
+            Log::info("Veio Aqui Essa Praga");
+            return response()->json([
+                'success' => true,
+                'chats' => $chats
+            ]);
+        })->name('chats.ativos');
 
         Route::get('/page/multiple-msg', [MultipleContactMsgController::class, 'index'])->name('page.multi.msg');
+        Route::get('/whatsapp/chats/json', [MultipleContactMsgController::class, 'getChatsJson'])->name('whatsapp.chats.json');
+        Route::post('/whatsapp/enviar', [MultipleContactMsgController::class, 'enviarMensagem'])->name('whatsapp.enviar');
+
 
         Route::get('/dashboard', [WhatsAppController::class, 'dashboard'])->name('dashboard');
+        Route::get('/contatos', [WhatsAppController::class, 'getContacts'])->name('get.contatos');
     });
 
     Route::get('/whatsapp/status', [WhatsAppController::class, 'status'])->name('whatsapp.status');
 
     Route::get('/connection', [ConnectionController::class, 'index'])->name('page.connection');
-    Route::get('/conectarwgw', [ConnectionController::class, 'conectarWgw']);
-    Route::get('/gerar-qrcode', [ConnectionController::class, 'gerarQrCode']);
+    /*Route::get('/conectarwgw', [ConnectionController::class, 'conectarWgw']);
+    Route::get('/gerar-qrcode', [ConnectionController::class, 'gerarQrCode']);*/
     Route::get('/status-conexao', [ConnectionController::class, 'status']);
     Route::post('/resetar-instancia', [ConnectionController::class, 'resetarInstancia']);
     //Route::post('/desconectar', [ConnectionController::class, 'desconectar']);
 
+    Route::get('/whatsapp/qrcode', [ConnectionController::class, 'gerarQrCode']);
+    Route::post('/whatsapp/generate-initial-qr', [ConnectionController::class, 'generateInitialQrCode']);
 
     /*Route::get('/whatsapp/status', [ConnectionController::class, 'status'])->name('whatsapp.status');
-    Route::get('/whatsapp/qrcode', [ConnectionController::class, 'qrcode']);
     Route::post('/whatsapp/restart', [ConnectionController::class, 'restartInstance']);
     Route::post('/whatsapp/disconnect', [ConnectionController::class, 'disconnect']);
     Route::post('/whatsapp/generate-initial-qr', [ConnectionController::class, 'generateInitialQrCode'])

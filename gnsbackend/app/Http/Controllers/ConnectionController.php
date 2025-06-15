@@ -1,11 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Instances;
 use App\Services\WhatsGwService;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -18,69 +16,37 @@ class ConnectionController extends Controller
     /**
      * Exibe a página de conexão
      */
-    public function index(WhatsGwService  $whatsGwService)
+    public function index()
     {
-        $instance = Instances::where('user_id', auth()->id())->first();
         $user = auth()->user();
+        $instance = Instances::where('user_id', $user->id)->first();
+
         Log::info($instance);
 
-        //$whatsGwService->newStance();
-        return view('pages.connect');
+        return view('pages.connect',[
+            'connected' => $instance->connected,
+            'qrcode' => $instance->qrcode
+        ]);
     }
 
     /**
      * Verifica o status da conexão WhatsApp
      */
-    public function status(): JsonResponse
+    public function status(WhatsGwService $whatsGwService)
     {
         try {
             $user = auth()->user();
+            $status = $whatsGwService->getStatus($user->instance_id);
 
-            // Verifica se pelo menos tem instance_id
-            if (!$user->instance_id) {
-                return response()->json([
-                    'status' => 'NOT_INITIALIZED',
-                    'error' => 'Instância não criada'
-                ], 400);
-            }
-
-            // Se não tem número, significa que é primeira conexão
-            if (!$user->number) {
-                return response()->json([
-                    'status' => 'AWAITING_FIRST_CONNECTION',
-                    'message' => 'Aguardando primeira conexão via QR Code'
-                ]);
-            }
-
-            // Tenta verificar status com timeout menor para falhar rápido
-            $response = Http::timeout(5)->asForm()->post(self::WHATSGW_BASE_URL . 'PhoneState', [
-                'apikey' => config('whatsgw.apiKey'),
-                'phone_number' => $user->number,
-                'w_instancia_id' => $user->instance_id,
-            ]);
-
-            if (!$response->successful()) {
-                Log::info('Status check failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
-
-                // Se falhou, assume que precisa reconectar
-                return response()->json([
-                    'status' => 'DISCONNECTED',
-                    'message' => 'Necessário reconectar'
-                ]);
-            }
-
-            $responseData = $response->json();
+            Log::info('==========  Status: '.$status['phone_state'].' ===========');
 
             return response()->json([
-                'status' => ($responseData['conectado'] ?? false) ? 'CONNECTED' : 'DISCONNECTED',
-                'phone_number' => $user->number,
-                'instance_id' => $user->instance_id
+                'status' => $status['phone_state'],
+                'number' => $status['phone_number'],
             ]);
 
         } catch (Exception $e) {
+
             Log::error('Exceção ao verificar status WhatsApp', [
                 'error' => $e->getMessage(),
                 'user_id' => auth()->id()
@@ -93,51 +59,29 @@ class ConnectionController extends Controller
         }
     }
 
-    public function generateInitialQrCode(): JsonResponse
+    public function gerarQrCode()
     {
-        try {
-            $user = auth()->user();
+        $user = auth()->user();
+        $instanciaId = $user->instance_id;
+        $apiKey = config('whatsgw.apiKey');
 
-            if (!$user->instance_id) {
-                return response()->json([
-                    'error' => 'Instância não encontrada'
-                ], 400);
-            }
+        //$this->restartInstance($apiKey, $instanciaId, '0');
 
-            // Gera QR Code para primeira conexão
-            $response = Http::timeout(10)->asForm()->post(self::WHATSGW_BASE_URL . 'QRCode', [
-                'apikey' => config('whatsgw.apiKey'),
-                'w_instancia_id' => $user->instance_id,
-            ]);
+        $path = "qrcodes/qrcode_$user->id.png";
+        //Log::info($path);
 
-            if (!$response->successful()) {
-                Log::error('Erro ao gerar QR Code inicial', [
-                    'status_code' => $response->status(),
-                    'response' => $response->body()
-                ]);
-
-                return response()->json([
-                    'error' => 'Erro ao gerar QR Code'
-                ], 500);
-            }
-
-            $responseData = $response->json();
-
+        if (!Storage::disk('public')->exists($path)) {
             return response()->json([
-                'qrcode_base64' => $responseData['qrcode_base64'] ?? null,
-                'message' => 'QR Code gerado para primeira conexão'
-            ]);
-
-        } catch (Exception $e) {
-            Log::error('Exceção ao gerar QR Code inicial', [
-                'error' => $e->getMessage(),
-                'user_id' => auth()->id()
-            ]);
-
-            return response()->json([
-                'error' => 'Erro interno do servidor'
-            ], 500);
+                'error' => 'QR Code ainda não disponível.'
+            ], 404);
         }
+
+        $contents = Storage::disk('public')->get($path);
+        $base64 = base64_encode($contents);
+
+        return response()->json([
+            'qrcode_base64' => 'data:image/png;base64,' . $base64,
+        ]);
     }
 
     /**
@@ -154,7 +98,7 @@ class ConnectionController extends Controller
                 ], 400);
             }
 
-            $path = "qrcodes/qrcode_{$user->instance_id}.png";
+            $path = "qrcodes/qrcode_{$user->id}.png";
 
             if (!Storage::disk('public')->exists($path)) {
                 return response()->json([

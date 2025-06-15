@@ -274,3 +274,31 @@ body {
     background-color: #28a745;
     border-color: #1e7e34;
 }
+
+
+/* Suaviza a scrollbar */
+#chats-ativos-wrapper::-webkit-scrollbar,
+#chats-selecionados-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chats-ativos-wrapper::-webkit-scrollbar-track,
+#chats-selecionados-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#chats-ativos-wrapper::-webkit-scrollbar-thumb,
+#chats-selecionados-wrapper::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+#chats-ativos-wrapper::-webkit-scrollbar-thumb:hover,
+#chats-selecionados-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.chat-item:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}

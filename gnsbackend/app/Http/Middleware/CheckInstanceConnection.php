@@ -27,15 +27,18 @@ class CheckInstanceConnection
     {
         $user = auth()->user();
 
+        Log::info('Executou o hook');
+
         if ($user && $user->role === 'nu') {
             if(!$user->enabled){
                 Log::info('Usuário ainda bloqueado aguarde...');
                 return redirect('/')->with('error', 'Usuário bloqueado, tente mais tarde!');
             }
-            /*if (!$user->instance_id) {
-                //$this->serviceWGW->newStance();
+            if (!$user->instance_id) {
+                Log::info('Veio criar uma nova instância');
+                $this->serviceWGW->newStance();
                 return redirect()->route('page.connection')->with('error', 'Você não tem nenhum aparelho ativo.');
-            }*/
+            }
         }
 
         return $next($request);

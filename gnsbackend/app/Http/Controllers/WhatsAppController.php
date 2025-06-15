@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SendMessageRequest;
 use App\Jobs\SendWhatsAppMessageJob;
+use App\Models\Contacts;
 use App\Models\Historic;
 use App\Models\Instances;
 use App\Services\ArrayDataDetector;
@@ -46,10 +47,10 @@ class WhatsAppController extends Controller
         }
 
         // Chama a API do whatsgw para gerar o QR Code
-        $whatsAppService = new WhatsAppService();
-        $qrCodeData = $whatsAppService->generateQRCode();
+        //$whatsAppService = new WhatsAppService();
+        //$qrCodeData = $whatsAppService->generateQRCode();
 
-        return view('pages.dashboard', compact('qrCodeData'));
+        return view('pages.dashboard');
     }
 
     public function status(Request $request)
@@ -65,6 +66,13 @@ class WhatsAppController extends Controller
 
         // Se não estiver conectado, retorna o status desconectado
         return response()->json(['status' => 'disconnected']);
+    }
+
+    public function getContacts(){
+        $user = auth()->user();
+        $contatos = Contacts::where('user_id', $user->id)->first();
+        //Log::info($contatos);
+        return response()->json($contatos->contacts);
     }
 }
 

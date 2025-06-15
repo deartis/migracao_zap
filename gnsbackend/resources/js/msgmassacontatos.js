@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const btnImportar = document.getElementById('btn-importar-contatos');
-    const listaContatos = document.getElementById('lista-contatos');
-    const contatosCheckboxes = document.getElementById('contatos-checkboxes');
+    const btnImportar = document.getElementById('btn-importar-chats');
+    const listaChats = document.getElementById('lista-chats');
+    const chatsCheckboxes = document.getElementById('chats-checkboxes');
     const selecionarTodos = document.getElementById('selecionar-todos');
-    const pesquisarContatos = document.getElementById('pesquisar-contatos');
+    const pesquisarChats = document.getElementById('pesquisar-chats');
     const contadorSelecionados = document.getElementById('contador-selecionados');
 
     const confirmarSelecaoBtn = document.getElementById('confirmar-selecao');
-    const contatosSelecionadosLista = document.getElementById('contatos-selecionados-lista');
+    const chatsSelecionadosLista = document.getElementById('chats-selecionados-lista');
     const contadorSelecionadosCard = document.getElementById('contador-selecionados-card');
     const limparSelecaoBtn = document.getElementById('limpar-selecao');
 
@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Exibe o nome do arquivo quando selecionado
     fileInput.addEventListener('change', function () {
         if (fileInput.value) {
-            // Extrai apenas o nome do arquivo do caminho completo
             fileChosen.textContent = fileInput.value.split('\\').pop();
         } else {
             fileChosen.textContent = 'Nenhum arquivo selecionado';
@@ -33,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Função para atualizar o contador de selecionados
     function atualizarContador() {
-        const totalSelecionados = document.querySelectorAll('input[name="contatos[]"]:checked').length;
+        const totalSelecionados = document.querySelectorAll('input[name="chats[]"]:checked').length;
         const contadorModal = document.getElementById('contador-selecionados-modal');
         if (contadorModal) {
             contadorModal.textContent = `${totalSelecionados} selecionado${totalSelecionados !== 1 ? 's' : ''}`;
@@ -48,14 +47,22 @@ document.addEventListener('DOMContentLoaded', function () {
         return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase();
     }
 
+    // Função para formatar o nome do contato
+    function formatarNomeContato(chat) {
+        // Prioriza: name > pushname > número formatado
+        if (chat.contact.name) return chat.contact.name;
+        if (chat.contact.pushname) return chat.contact.pushname;
+        return chat.id; // Retorna o número como fallback
+    }
+
     // Exibir loading durante a importação
     function mostrarLoading() {
-        btnImportar.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Importando...';
+        btnImportar.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Carregando...';
         btnImportar.disabled = true;
     }
 
     function ocultarLoading() {
-        btnImportar.innerHTML = '<i class="bi bi-whatsapp me-1"></i> Importar contatos';
+        btnImportar.innerHTML = '<i class="bi bi-chat-dots me-1"></i> Carregar chats';
         btnImportar.disabled = false;
     }
 
@@ -63,70 +70,78 @@ document.addEventListener('DOMContentLoaded', function () {
         mostrarLoading();
 
         try {
-            const response = await fetch(window.whatsappApiUrl + '/contacts', {
+            console.log(window.whatsgwApiKey);
+            // Substitua pela sua URL e configurações do WhatsGW
+            const response = await fetch(window.whatsgwApiUrl + '/GetAllChats', {
+                method: 'POST',
                 headers: {
-                    Authorization: 'Bearer ' + window.whatsappApiToken,
-                }
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    apikey: window.whatsgwApiKey,
+                    phone_number: window.whatsgwPhoneNumber
+                })
             });
 
             const data = await response.json();
-            const contatos = data.contacts;
 
-            // Filtra apenas os contatos com @c.us
-            const contatosValidos = contatos.filter(c => c.id.endsWith('@c.us'));
+            // Filtra apenas chats individuais (não grupos)
+            const chatsIndividuais = data.chats.filter(chat =>
+                chat.contact && !chat.contact.isGroup && chat.id !== window.whatsgwPhoneNumber
+            );
 
-            contatosCheckboxes.innerHTML = ''; // Limpa antes de adicionar
+            chatsCheckboxes.innerHTML = ''; // Limpa antes de adicionar
 
-            if (contatosValidos.length === 0) {
-                contatosCheckboxes.innerHTML = `
-                        <li class="list-group-item text-center py-4">
-                            <i class="bi bi-exclamation-circle text-muted fs-3"></i>
-                            <p class="mb-0 mt-2">Nenhum contato encontrado</p>
-                        </li>
-                    `;
+            if (chatsIndividuais.length === 0) {
+                chatsCheckboxes.innerHTML = `
+                    <li class="list-group-item text-center py-4">
+                        <i class="bi bi-exclamation-circle text-muted fs-3"></i>
+                        <p class="mb-0 mt-2">Nenhum chat ativo encontrado</p>
+                    </li>
+                `;
             } else {
-                contatosValidos.forEach((contato, index) => {
-                    const nome = contato.name || contato.number.split('@')[0];
-                    const numero = contato.number;
+                chatsIndividuais.forEach((chat, index) => {
+                    const nome = formatarNomeContato(chat);
+                    const numero = chat.id;
                     const iniciais = obterIniciais(nome);
 
                     const li = document.createElement('li');
                     li.className = 'list-group-item p-0';
                     li.innerHTML = `
-                            <div class="contato-item">
-                                <div class="form-check d-flex align-items-center">
-                                    <input class="form-check-input me-2" type="checkbox" name="contatos[]"
-                                        value="${numero}" id="contato-${index}" data-nome="${nome}">
-                                </div>
-                                <div class="contato-avatar">
-                                    ${iniciais}
-                                </div>
-                                <div class="contato-info">
-                                    <p class="contato-nome">${nome}</p>
-                                    <p class="contato-numero">${numero.split('@')[0]}</p>
-                                </div>
+                        <div class="contato-item">
+                            <div class="form-check d-flex align-items-center">
+                                <input class="form-check-input me-2" type="checkbox" name="chats[]"
+                                    value="${numero}" id="chat-${index}" data-nome="${nome}">
                             </div>
-                        `;
-                    contatosCheckboxes.appendChild(li);
+                            <div class="contato-avatar">
+                                ${iniciais}
+                            </div>
+                            <div class="contato-info">
+                                <p class="contato-nome">${nome}</p>
+                                <p class="contato-numero">${numero}</p>
+                            </div>
+                        </div>
+                    `;
+                    chatsCheckboxes.appendChild(li);
 
                     // Adicionar evento para atualizar contador
                     li.querySelector('input[type="checkbox"]').addEventListener('change', atualizarContador);
                 });
             }
 
-            if (listaContatos) {
-                listaContatos.style.display = 'block';
+            if (listaChats) {
+                listaChats.style.display = 'block';
             }
             atualizarContador();
         } catch (error) {
-            console.error('Erro ao importar contatos:', error);
-            contatosCheckboxes.innerHTML = `
-                    <li class="list-group-item text-center py-4">
-                        <i class="bi bi-exclamation-triangle text-danger fs-3"></i>
-                        <p class="mb-0 mt-2">Erro ao carregar contatos. Tente novamente.</p>
-                    </li>
-                `;
-            listaContatos.style.display = 'block';
+            console.error('Erro ao carregar chats:', error);
+            chatsCheckboxes.innerHTML = `
+                <li class="list-group-item text-center py-4">
+                    <i class="bi bi-exclamation-triangle text-danger fs-3"></i>
+                    <p class="mb-0 mt-2">Erro ao carregar chats. Tente novamente.</p>
+                </li>
+            `;
+            listaChats.style.display = 'block';
         } finally {
             ocultarLoading();
         }
@@ -134,15 +149,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Selecionar todos
     selecionarTodos.addEventListener('change', () => {
-        const checkboxes = document.querySelectorAll('input[name="contatos[]"]');
+        const checkboxes = document.querySelectorAll('input[name="chats[]"]');
         checkboxes.forEach(cb => cb.checked = selecionarTodos.checked);
         atualizarContador();
     });
 
-    // Pesquisar contatos
-    pesquisarContatos.addEventListener('input', function (e) {
+    // Pesquisar chats
+    pesquisarChats.addEventListener('input', function (e) {
         const termo = e.target.value.toLowerCase();
-        const itens = contatosCheckboxes.querySelectorAll('li');
+        const itens = chatsCheckboxes.querySelectorAll('li');
 
         itens.forEach(item => {
             const checkbox = item.querySelector('input[type="checkbox"]');
@@ -159,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Exemplo de envio final (integração com backend depois)
+    // Envio de mensagem
     document.getElementById('btn-enviar-mensagem').addEventListener('click', () => {
         const mensagem = document.getElementById('mensagem').value;
         if (!mensagem.trim()) {
@@ -167,21 +182,22 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const selecionados = Array.from(document.querySelectorAll('input[name="contatos[]"]:checked')).map(cb => ({
+        const selecionados = Array.from(document.querySelectorAll('input[name="chats[]"]:checked')).map(cb => ({
             numero: cb.value,
-            nome: cb.getAttribute('data-nome') || cb.value.split('@')[0]
+            nome: cb.getAttribute('data-nome') || cb.value
         }));
+
         if (selecionados.length === 0) {
-            alert('Selecione pelo menos um contato para enviar a mensagem.');
+            alert('Selecione pelo menos um chat para enviar a mensagem.');
             return;
         }
 
         // Exibir confirmação
-        if (confirm(`Enviar mensagem para ${selecionados.length} contato(s)?`)) {
+        if (confirm(`Enviar mensagem para ${selecionados.length} chat(s)?`)) {
             console.log('Mensagem:', mensagem);
             console.log('Enviar para:', selecionados);
 
-            fetch('/envia-mensagem-em-massa-contstos', {
+            fetch('/envia-mensagem-em-massa-chats', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -189,64 +205,43 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 body: JSON.stringify({
                     mensagem: mensagem,
-                    contatos: selecionados
+                    chats: selecionados
                 })
             })
                 .then(response => response.json())
-             .then(data => {
-                if(data.message){
-                    alert(data.message);
-                }else if(data.error){
-                    alert(data.error);
-                }else{
-                    alert('Mensagem enviada com sucesso!');
-                }
-             })
-             .catch(error => {
-                 console.error('Erro ao enviar mensagem:', error);
-                 alert('Erro ao enviar mensagem. Tente novamente.');
-             });
-
-            // Aqui você envia para um controller Laravel com fetch ou axios
-            // Exemplo:
-            // fetch('/api/enviar-mensagem', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            //     },
-            //     body: JSON.stringify({
-            //         mensagem: mensagem,
-            //         contatos: selecionados
-            //     })
-            // })
-            // .then(response => response.json())
-            // .then(data => {
-            //     alert('Mensagem enviada com sucesso!');
-            // })
-            // .catch(error => {
-            //     console.error('Erro ao enviar mensagem:', error);
-            //     alert('Erro ao enviar mensagem. Tente novamente.');
-            // });
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                    } else if (data.error) {
+                        alert(data.error);
+                    } else {
+                        alert('Mensagem enviada com sucesso!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao enviar mensagem:', error);
+                    alert('Erro ao enviar mensagem. Tente novamente.');
+                });
         }
     });
 
+    // Confirmar seleção
     document.getElementById('confirmar-selecao').addEventListener('click', () => {
-        const selecionados = Array.from(document.querySelectorAll('input[name="contatos[]"]:checked'));
+        const selecionados = Array.from(document.querySelectorAll('input[name="chats[]"]:checked'));
 
-        const listaSelecionados = document.getElementById('contatos-selecionados-lista');
+        const listaSelecionados = document.getElementById('chats-selecionados-lista');
         listaSelecionados.innerHTML = ''; // Limpa antes de adicionar
 
         if (selecionados.length === 0) {
             listaSelecionados.innerHTML = `
             <li class="list-group-item text-center text-muted">
-                Nenhum contato selecionado
+                Nenhum chat selecionado
             </li>
         `;
         } else {
             selecionados.forEach(cb => {
-                const nome = cb.getAttribute('data-nome') || cb.value.split('@')[0];
-                const numero = cb.value.split('@')[0];
+                const nome = cb.getAttribute('data-nome') || cb.value;
+                const numero = cb.value;
 
                 const li = document.createElement('li');
                 li.className = 'list-group-item d-flex justify-content-between align-items-center';
@@ -276,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const numero = this.getAttribute('data-numero');
 
                 // Desmarca no modal
-                const checkbox = document.querySelector(`input[name="contatos[]"][value="${numero}"]`);
+                const checkbox = document.querySelector(`input[name="chats[]"][value="${numero}"]`);
                 if (checkbox) checkbox.checked = false;
 
                 // Remove da lista de selecionados
@@ -286,32 +281,33 @@ document.addEventListener('DOMContentLoaded', function () {
                 atualizarContador();
 
                 // Atualiza contador no card
-                const novosSelecionados = document.querySelectorAll('#contatos-selecionados-lista li').length;
+                const novosSelecionados = document.querySelectorAll('#chats-selecionados-lista li').length;
                 document.getElementById('contador-selecionados-card').textContent = `${novosSelecionados} selecionado${novosSelecionados !== 1 ? 's' : ''}`;
 
                 // Se ficou vazio, mostrar texto padrão
                 if (novosSelecionados === 0) {
-                    document.getElementById('contatos-selecionados-lista').innerHTML = `
+                    document.getElementById('chats-selecionados-lista').innerHTML = `
                     <li class="list-group-item text-center text-muted">
-                        Nenhum contato selecionado
+                        Nenhum chat selecionado
                     </li>
                 `;
                 }
             });
         });
     }
+
     limparSelecaoBtn.addEventListener('click', () => {
         // Desmarca todos os checkboxes
-        const checkboxes = document.querySelectorAll('input[name="contatos[]"]');
+        const checkboxes = document.querySelectorAll('input[name="chats[]"]');
         checkboxes.forEach(cb => cb.checked = false);
 
         // Atualiza o contador no modal
         atualizarContador();
 
-        // Limpa a lista de contatos selecionados
-        contatosSelecionadosLista.innerHTML = `
+        // Limpa a lista de chats selecionados
+        chatsSelecionadosLista.innerHTML = `
         <li class="list-group-item text-center text-muted">
-            Nenhum contato selecionado
+            Nenhum chat selecionado
         </li>
     `;
         contadorSelecionadosCard.textContent = '0 selecionados';
@@ -319,12 +315,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('limpar-selecao').addEventListener('click', () => {
         // Desmarca todos no modal
-        document.querySelectorAll('input[name="contatos[]"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('input[name="chats[]"]').forEach(cb => cb.checked = false);
 
         // Limpa a lista visual
-        document.getElementById('contatos-selecionados-lista').innerHTML = `
+        document.getElementById('chats-selecionados-lista').innerHTML = `
         <li class="list-group-item text-center text-muted">
-            Nenhum contato selecionado
+            Nenhum chat selecionado
         </li>
     `;
 
@@ -335,35 +331,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     confirmarSelecaoBtn.addEventListener('click', () => {
         // Limpa a lista atual
-        contatosSelecionadosLista.innerHTML = '';
+        chatsSelecionadosLista.innerHTML = '';
 
         // Obtém os checkboxes selecionados
-        const checkboxesSelecionados = document.querySelectorAll('input[name="contatos[]"]:checked');
+        const checkboxesSelecionados = document.querySelectorAll('input[name="chats[]"]:checked');
 
         if (checkboxesSelecionados.length === 0) {
-            contatosSelecionadosLista.innerHTML = `
+            chatsSelecionadosLista.innerHTML = `
             <li class="list-group-item text-center text-muted">
-                Nenhum contato selecionado
+                Nenhum chat selecionado
             </li>
         `;
             contadorSelecionadosCard.textContent = '0 selecionados';
             return;
         }
 
-        // Adiciona os contatos selecionados à lista
+        // Adiciona os chats selecionados à lista
         checkboxesSelecionados.forEach(cb => {
             const nome = cb.getAttribute('data-nome');
-            const numero = cb.value.split('@')[0];
+            const numero = cb.value;
 
             const li = document.createElement('li');
             li.className = 'list-group-item';
             li.textContent = `${nome} - ${numero}`;
-            contatosSelecionadosLista.appendChild(li);
+            chatsSelecionadosLista.appendChild(li);
         });
 
         // Atualiza o contador
         contadorSelecionadosCard.textContent = `${checkboxesSelecionados.length} selecionado${checkboxesSelecionados.length > 1 ? 's' : ''}`;
     });
-
-
 });

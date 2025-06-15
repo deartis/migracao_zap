@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Instances extends Model
 {
-    protected $fillable = ['user_id', 'instance_id', 'token', 'connected'];
+    protected $fillable = ['user_id', 'instance_id', 'token', 'connected', 'status', 'qrcode'];
 
     public function user(){
         return $this->belongsTo(User::class);

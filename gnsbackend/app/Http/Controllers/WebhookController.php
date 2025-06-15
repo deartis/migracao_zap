@@ -2,22 +2,56 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contacts;
 use App\Models\Instances;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Models\User;
+/**
+ * WebhookController
+ *
+ * Handles incoming webhooks for chat events and QR code updates.
+ */
 
 class WebhookController extends Controller
 {
-    public function receberQrCode(Request $request)
+    public function webhooks(Request $request)
     {
-        Log::info('Webhook QRCode recebido: ', $request->all());
+        $data = $request->all();
+        Log::info('Request: ', $data);
 
-        if ($request->input('event') !== 'qrcode') {
-            return response()->json(['status' => 'ignored']);
+        if ($data['event'] === 'chats') {
+            $instanciaId = $data['w_instancia_id'] ?? null;
+
+            // Recupera o usuário pela instância
+            $instancia = User::where('instance_id', $instanciaId)->first();
+
+            if ($instancia) {
+                $userId = $instancia->id;
+
+                $contatos = collect($data['chats'])->map(function ($chat) {
+                    return [
+                        'telefone' => $chat['id'],
+                        'nome' => $chat['contact']['name'] ?? $chat['contact']['pushname'] ?? 'Sem Nome'
+                    ];
+                })->toArray();
+
+                Contacts::mergeAndSaveContacts($userId, $contatos);
+
+                Log::info("Contatos salvos para o usuário ID {$userId}");
+            } else {
+                Log::warning("Instância {$instanciaId} não encontrada. Contatos não salvos.");
+            }
+
+            return response()->json(['status' => 'ok']);
         }
+
+//        if ($request->input('event') !== 'qrcode') {
+//            return response()->json(['status' => 'ignored']);
+//        }
 
         $base64Image = $request->input('qrcode');
         $instanciaId = $request->input('w_instancia_id');
@@ -31,21 +65,6 @@ class WebhookController extends Controller
         Storage::disk('public')->put($filename, $imageData);
 
         Log::info("QR Code salvo em: $filename");
-
-        // Atualiza a instância com o caminho do QR Code
-        $instancia = Instances::where('user_id', auth()->id())
-            ->where('instance_id', $instanciaId)
-            ->first();
-
-        if ($instancia) {
-            //Atualiza a instância com o status de conexão
-            $instancia->updateOrCreate([
-                'connected' => false,
-                'token' => null,
-            ]);
-        } else {
-            Log::error("Instância com ID $instanciaId não encontrada.");
-        }
 
         return response()->json(['status' => 'ok']);
     }

@@ -84,7 +84,7 @@ class InportListController extends Controller
             $contatosProcessados = $this->processarContatos($contatos);
 
             // Você pode passar $pathArquivo para o Job se desejar
-            Log::info($statusUsuario);
+            //Log::info($statusUsuario);
             MensagensEmMassaJob::dispatch(
                 $contatosProcessados,
                 auth()->id(),
