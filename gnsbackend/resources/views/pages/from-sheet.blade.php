@@ -139,6 +139,21 @@
                         </div>
                     </div>
 
+                    <!-- Card de Progresso Fixo -->
+                    <div id="cardProgressoFixo" class="card shadow-sm mb-4" style="display: none;">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <span>Enviando mensagens...</span>
+                            <button id="btnInterromperEnvio" class="btn btn-danger btn-sm">Interromper envio</button>
+                        </div>
+                        <div class="card-body">
+                            <p id="progressoTextoFixo">0 de 0</p>
+                            <div class="progress" style="height: 25px;">
+                                <div id="barraProgressoFixo" class="progress-bar progress-bar-striped progress-bar-animated"
+                                     role="progressbar" style="width: 0%;">0%</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="d-flex justify-content-between">
                         <button type="button" id="btnVoltarPasso3" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-left"></i> Voltar
@@ -184,7 +199,7 @@
                                 <div class="progress" style="height: 25px; position: relative;">
                                     <div id="barraProgresso"
                                         class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                                        style="width: 0%;">
+                                        style="width: 0;">
                                         0%
                                     </div>
                                 </div>
@@ -200,40 +215,7 @@
                     </div>
                 </div>
 
-
-                <!-- Modal -->
-                {{-- <div class="modal fade" id="modalEnvio" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
-                    data-bs-keyboard="false">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content text-center">
-                            <div class="modal-body">
-                                <h5 class="modal-title mb-3">Enviando mensagens...</h5>
-                                <p id="progressoTexto">0 de 0</p>
-                                <div class="progress" style="height: 25px;">
-                                    <div id="barraProgresso"
-                                        class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                                        style="width: 0%;">
-                                        0%
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> --}}
-
             </div>
         </div>
     </div>
 @endsection
-
-{{-- @section('scripts')
-    <script>
-        function carregaTemplate() {
-            fetch('/get-tpl')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('messageTextarea').value = data.template;
-                });
-        }
-    </script>
-@endsection --}}

@@ -8,6 +8,7 @@ use App\Models\EnvioProgresso;
 use App\Models\Historic;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
@@ -216,5 +217,13 @@ class InportListController extends Controller
         return response()->json([
             'template' => $tpl
         ]);
+    }
+
+    public function interromper()
+    {
+        $userId = auth()->id();
+        // Define uma flag de interrupção no cache
+        Cache::put("interromper_envio_$userId", true, now()->addMinutes(10));
+        return response()->json(['message' => 'Job será interrompido.']);
     }
 }

@@ -50,6 +50,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/reseta-progresso', [InportListController::class, 'resetaProgresso']);
         Route::post('/envia-mensagem-em-massa-contatos', [MultipleContactMsgController::class, 'enviaMensagemContatosWhatsapp'])->name('enviar.mensagem.massa.contatos');
 
+        // Interrompe o envio de mensagem em massa do job
+        Route::post('/interromper-envio', [InportListController::class, 'interromper']);
+
+
         Route::get('/chats-ativos', function () {
             $userId = auth()->id(); // ou como você obtém o ID do usuário
             $chats = \Illuminate\Support\Facades\Cache::get("chats_ativos_$userId", []);

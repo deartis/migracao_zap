@@ -264,19 +264,21 @@
             });
         });
     </script>
-
     {{-- Envia para o controller  --}}
     <script>
         document.getElementById('btn-enviar-mensagem').addEventListener('click', function () {
             const mensagem = document.getElementById('mensagem').value;
             const arquivo = document.getElementById('arquivo').files[0];
 
-            const numerosSelecionados = [];
+            const contatosSelecionados = [];
             document.querySelectorAll('#chats-selecionados-lista li[data-telefone]').forEach(li => {
-                numerosSelecionados.push(li.getAttribute('data-telefone'));
+                contatosSelecionados.push({
+                    number: li.getAttribute('data-telefone'),
+                    name: li.textContent.split('-')[0] || 'Sem nome'
+                });
             });
 
-            if (numerosSelecionados.length === 0) {
+            if (contatosSelecionados.length === 0) {
                 alert('Selecione pelo menos um contato.');
                 return;
             }
@@ -288,7 +290,8 @@
 
             const formData = new FormData();
             formData.append('mensagem', mensagem);
-            formData.append('contatos', JSON.stringify(numerosSelecionados));
+            formData.append('contatos', JSON.stringify(contatosSelecionados));
+            console.log(formData);
             if (arquivo) {
                 formData.append('arquivo', arquivo);
             }

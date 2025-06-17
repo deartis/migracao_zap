@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
@@ -68,7 +69,7 @@ class MensagensEmMassaJob implements ShouldQueue
      *
      * @var int
      */
-    protected int $tamanhoBatch = 15;
+    protected int $tamanhoBatch = 5;
 
     /**
      * Construtor do job
@@ -155,6 +156,12 @@ class MensagensEmMassaJob implements ShouldQueue
         );
 
         foreach ($lote as $indice => $contato) {
+            if (Cache::get("interromper_envio_$this->idUser")) {
+                // Opcional: Resetar progresso
+                Cache::forget("interromper_envio_$this->idUser");
+                Log::info("O Envio de mensagem em massa foi interrompido pelo usuário");
+                return; // Interrompe o job
+            }
             /*Log::info("Enviando mensagem para contato {$indice} do lote {$numeroLote}", [
                 'user_id' => $this->idUser,
                 'contato' => $contato
@@ -179,7 +186,7 @@ class MensagensEmMassaJob implements ShouldQueue
                 return;
             }
 
-            Log::info($contato);
+            //Log::info($contato);
 
             // $this->enviarMensagem($contato);
             // Log::info($indice + 1);

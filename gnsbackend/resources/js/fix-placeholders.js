@@ -201,10 +201,40 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
 
-            // Agora mostra o modal e começa a 
-            
+            // Agora mostra o modal e começa a
+
             mostrarModal();
 
+            document.getElementById('btnInterromperEnvio').addEventListener('click', async () => {
+                if (confirm('Tem certeza que deseja interromper o envio das mensagens?')) {
+                    const response = await fetch('/interromper-envio', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+
+                    const result = await response.json();
+                    if (response.ok) {
+                        alert('Envio interrompido com sucesso!');
+                        location.reload();
+                    } else {
+                        alert('Erro ao interromper o envio: ' + result.message);
+                    }
+
+                    // Esconde os elementos de progresso
+                    document.getElementById('cardProgressoFixo').style.display = 'none';
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalEnvio'));
+                    modal?.hide();
+
+                    // ⬅️ Reativa o botão e redefine o texto
+                    const btnEnviar = document.getElementById('btnEnviarMensagens');
+                    btnEnviar.innerHTML = '<i class="bi bi-send-fill"></i> Enviar Mensagens';
+                    btnEnviar.disabled = false;
+
+                }
+            });
 
         } catch (error) {
             console.error('Erro:', error);
@@ -221,15 +251,24 @@ document.addEventListener('DOMContentLoaded', function () {
         //const btn = document.getElementById('btnEnviarMensagens');
         modal.show();
 
+        // Mostrar também o card fixo na view
+        document.getElementById('cardProgressoFixo').style.display = 'block';
+
         document.getElementById('modalEnvio').style.display = 'block';
         const intervalo = setInterval(() => {
             fetch('/envio-progresso') // rota que retorna JSON com progresso
                 .then(res => res.json())
                 .then(data => {
-                    const { total, enviadas, status } = data;
+                    const {total, enviadas, status} = data;
                     const porcentagem = total > 0 ? Math.round((enviadas / total) * 100) : 0;
                     //const porcentagem = Math.round((enviadas / total) * 100);
                     document.getElementById('progressoTexto').innerText = `${enviadas}/${total}`;
+                    document.getElementById('progressoTextoFixo').innerText = `${enviadas}/${total}`;
+
+                    const barraFixa = document.getElementById('barraProgressoFixo');
+                    barraFixa.style.width = `${porcentagem}%`;
+                    barraFixa.innerText = `${porcentagem}%`;
+
                     const barra = document.getElementById('barraProgresso');
                     barra.style.width = `${porcentagem}%`;
                     barra.innerText = `${porcentagem}%`;
@@ -238,6 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (status === 'finalizado') {
                         clearInterval(intervalo);
                         setTimeout(() => {
+                            document.getElementById('cardProgressoFixo').style.display = 'none';
                             modal.hide();
                             // Chamar backend para resetar
                             fetch('/reseta-progresso', {
@@ -258,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     document.getElementById('barraProgresso').innerText = '0%';
                                     document.getElementById('progressoTexto').innerText = '0/0';
 
-                                    /*// Limpar checkboxes
+                                    // Limpar checkboxes
                                     document.querySelectorAll('#formSelecaoColunas input[type="checkbox"]').forEach(checkbox => {
                                         checkbox.checked = false;
                                     });
@@ -270,9 +310,9 @@ document.addEventListener('DOMContentLoaded', function () {
                                     //Limpar Preview
                                     document.getElementById('messagePreview').innerHTML = `
     <p class="text-muted text-center">A prévia da mensagem será exibida aqui.</p>
-`;*/
+`;
                                     // Atualiza a página
-                                    //location.reload();
+                                    location.reload();
                                 });
                         }, 1000);
                     }
@@ -387,11 +427,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const reader = new FileReader();
         reader.onload = function (e) {
             const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
+            const workbook = XLSX.read(data, {type: 'array'});
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 
             // Converter para JSON mantendo cabeçalhos
-            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
 
             if (jsonData.length < 2) {
                 alert('O arquivo precisa ter pelo menos 1 linha de dados.');
@@ -422,7 +462,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Processa dados de Excel
     function processExcelData(workbook) {
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
 
         if (jsonData.length < 2) {
             alert('O arquivo precisa ter pelo menos 1 linha de dados.');
@@ -610,7 +650,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 insertAtCursor(messageTextarea, placeholder);
 
                 // Disparar evento para atualizar prévia
-                const inputEvent = new Event('input', { bubbles: true });
+                const inputEvent = new Event('input', {bubbles: true});
                 messageTextarea.dispatchEvent(inputEvent);
             });
 

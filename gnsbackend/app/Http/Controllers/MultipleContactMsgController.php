@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\MensagensEmMassaJob;
+use App\Jobs\MensagensMassaContatosJob;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -12,9 +13,6 @@ use App\Services\WhatsGwService;
 
 class MultipleContactMsgController extends Controller
 {
-    /**
-     * @throws ConnectionException
-     */
     public function index()
     {
         return view('pages.from-contacts');
@@ -22,16 +20,7 @@ class MultipleContactMsgController extends Controller
 
     public function enviaMensagemContatosWhatsapp(Request $request)
     {
-        Log::info($request);
-        $validator = $request->validate([
-            'mensagem' => 'required|string',
-            'contatos' => 'required|json',
-            'arquivo' => 'nullable|file|max:10240', // até 10MB, por exemplo
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['message' => $validator->errors()->first()], 400);
-        }
+        //Log::info($request);
 
         $mensagem = $request->mensagem;
         $contatos = json_decode($request->contatos, true);
@@ -59,16 +48,17 @@ class MultipleContactMsgController extends Controller
         }
 
         try {
-            $erros = $this->verificaContatos($contatos);
-            $contatosProcessados = $this->processarContatos($contatos);
+            //$erros = $this->verificaContatos($contatos);
+            //$contatosProcessados = $this->processarContatos($contatos);
 
             // Você pode passar $pathArquivo para o Job se desejar
             //Log::info($statusUsuario);
-            MensagensEmMassaJob::dispatch(
-                $contatosProcessados,
-                auth()->id(),
-                $statusUsuario,
+            MensagensMassaContatosJob::dispatch(
+                $contatos,
+                $mensagem,
                 $pathArquivo ?? null,
+                $statusUsuario,
+                $usuario->id
             );
 
             return response()->json(['message' => 'Mensagens sendo executadas...']);
@@ -93,8 +83,8 @@ class MultipleContactMsgController extends Controller
         // Verifica se o usuário tem limite disponível
         $temLimite = $usuario->msgLimit > $usuario->sendedMsg;
 
-        // Verifica se o usuário está ativo/habilitado (ajuste conforme sua aplicação)
-        $estaHabilitado = $usuario->status === 'active';
+        // Verifica se o usuário está ativo/habilitado)
+        $estaHabilitado = $usuario->enabled;
 
         return [
             'userm' => $usuario,
