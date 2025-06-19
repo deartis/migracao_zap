@@ -67,6 +67,23 @@
                     </div>
                 </div>
 
+                <div>
+                    <!-- Card de Progresso Fixo -->
+                    <div id="cardProgressoFixo" class="card shadow-sm mb-4" style="display: none;">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <span>Enviando mensagens...</span>
+                            <button id="btnInterromperEnvio" class="btn btn-danger btn-sm">Interromper envio</button>
+                        </div>
+                        <div class="card-body">
+                            <p id="progressoTextoFixo">0 de 0</p>
+                            <div class="progress" style="height: 25px;">
+                                <div id="barraProgressoFixo" class="progress-bar progress-bar-striped progress-bar-animated"
+                                     role="progressbar" style="width: 0%;">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row">
                     <div class="col-md-6">
                         <!-- Botão para carregar chats ativos -->
@@ -284,7 +301,8 @@
             }
 
             if (!mensagem.trim()) {
-                alert('Digite a mensagem.');
+                //alert('Digite a mensagem.');
+                console.log("Digite uma mensagem!");
                 return;
             }
 
@@ -311,6 +329,93 @@
                 });
         });
     </script>
+    {{-- Trata o Card com o progresso --}}
+    <script>
+        function mostrarCardProgressoFixo() {
+            const card = document.getElementById('cardProgressoFixo');
+            card.style.display = 'block';
+
+            const intervalo = setInterval(() => {
+                fetch('/envio-progresso')
+                    .then(res => res.json())
+                    .then(data => {
+                        const { total, enviadas, status } = data;
+                        const porcentagem = total > 0 ? Math.round((enviadas / total) * 100) : 0;
+
+                        document.getElementById('progressoTextoFixo').innerText = `${enviadas}/${total}`;
+                        const barra = document.getElementById('barraProgressoFixo');
+                        barra.style.width = `${porcentagem}%`;
+                        barra.innerText = `${porcentagem}%`;
+
+                        if (status === 'finalizado') {
+                            clearInterval(intervalo);
+                            document.getElementById('cardProgressoFixo').style.display = 'none';
+
+                            // Reabilita botão
+                            const btn = document.getElementById('btn-enviar-mensagem');
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Enviar mensagem';
+
+                            // Resetar barra
+                            barra.style.width = '0%';
+                            barra.innerText = '0%';
+                            document.getElementById('progressoTextoFixo').innerText = '0/0';
+
+                            // Resetar backend (opcional)
+                            fetch('/reseta-progresso', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                }
+                            });
+                        }
+                    });
+            }, 1000);
+
+            // Interromper envio
+            document.getElementById('btnInterromperEnvio').addEventListener('click', async () => {
+                if (confirm('Tem certeza que deseja interromper o envio das mensagens?')) {
+                    const res = await fetch('/interromper-envio', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+
+                    const result = await res.json();
+
+                    clearInterval(intervalo);
+                    document.getElementById('cardProgressoFixo').style.display = 'none';
+
+                    // Reabilita botão
+                    const btn = document.getElementById('btn-enviar-mensagem');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-send-fill me-1"></i> Enviar mensagem';
+
+                    alert(result.message || 'Envio interrompido com sucesso');
+                }
+            });
+        }
+
+        // Mostrar card após envio começar
+        document.getElementById('btn-enviar-mensagem').addEventListener('click', () => {
+            const mensagem = document.getElementById('mensagem').value.trim();
+            if (mensagem === '') {
+                alert('Digite uma mensagem antes de enviar!');
+                return; // Interrompe aqui, não ativa o botão nem o card
+            }
+
+            const btn = document.getElementById('btn-enviar-mensagem');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando mensagens...';
+
+            mostrarCardProgressoFixo();
+        });
+
+    </script>
+
 @endpush
 
 

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contacts;
+use App\Models\Historic;
 use App\Services\PhoneValidator;
 use App\Services\WhatsGwService;
 use Illuminate\Http\Request;
@@ -20,8 +22,10 @@ class SingleContactController extends Controller
 
     public function index()
     {
-        //dd($this->importarChats());
-        return view('pages.single-contact');
+        $user = auth()->user();
+        $contatos = Contacts::where('user_id', $user->id)->get();
+
+        return view('pages.single-contact', compact('contatos'));
     }
 
     public function send(Request $request)
@@ -41,8 +45,12 @@ class SingleContactController extends Controller
         $contato = $request->contato;
         $mensagem = $request->mensagem;
         $arquivo = $request->arquivo;
+        $nome = $request->nome;
 
         if ($arquivo) {
+            Log::info("Tem Arquivo",[
+                $request
+            ]);
             $response = $this->whatsGwService->sendFile(
                 $numero['number'],
                 $contato,
@@ -52,6 +60,9 @@ class SingleContactController extends Controller
                 $mensagem
             );
         } else {
+            Log::info("nao tem Arquivo",[
+                $request
+            ]);
             $response = $this->whatsGwService->sendMessage(
                 $numero['number'],
                 $contato,
@@ -59,27 +70,35 @@ class SingleContactController extends Controller
             );
         }
 
+        Historic::create([
+            'user_id' => $user->id,
+            'contact' => $contato,
+            'status' => 'success',
+            'name' => $nome,
+            'errorType' => '-'
+        ]);
+
         return response()->json($response);
     }
 
-    public function importarChats()
-{
-    $apiKey = config('whatsgw.apiKey');
-    $apiUrl = config('whatsgw.apiUrl');
-    $phoneNumber = numeroUsuario();
+    public function importarChats(Contacts $contacts)
+    {
+        $apiKey = config('whatsgw.apiKey');
+        $apiUrl = config('whatsgw.apiUrl');
+        $phoneNumber = numeroUsuario();
 
-    $response = Http::asForm()->post($apiUrl.'/GetAllChats', [
-        'apikey' => $apiKey,
-        'phone_number' => $phoneNumber,
-    ]);
+        $response = Http::asForm()->post($apiUrl.'/GetAllChats', [
+            'apikey' => $apiKey,
+            'phone_number' => $phoneNumber,
+        ]);
 
-    if ($response->successful()) {
-        $chats = $response->json(); // aqui deve vir uma lista com remoteJid e nome
+        if ($response->successful()) {
+            $chats = $response->json(); // aqui deve vir uma lista com remoteId e nome
 
-        return  $chats;
+            return  $chats;
+        }
+
+        return back()->with('error', 'Erro ao buscar os contatos do WhatsGW');
     }
-
-    return back()->with('error', 'Erro ao buscar os contatos do WhatsGW');
-}
 
 }

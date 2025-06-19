@@ -1,6 +1,5 @@
 <?php
 
-use App\Events\ConnectionStatusChanged;
 use App\Http\Controllers\ConnectionController;
 use App\Http\Controllers\HistoricController;
 use App\Http\Controllers\HomeController;
@@ -53,7 +52,6 @@ Route::middleware(['auth'])->group(function () {
         // Interrompe o envio de mensagem em massa do job
         Route::post('/interromper-envio', [InportListController::class, 'interromper']);
 
-
         Route::get('/chats-ativos', function () {
             $userId = auth()->id(); // ou como você obtém o ID do usuário
             $chats = \Illuminate\Support\Facades\Cache::get("chats_ativos_$userId", []);
@@ -66,9 +64,8 @@ Route::middleware(['auth'])->group(function () {
         })->name('chats.ativos');
 
         Route::get('/page/multiple-msg', [MultipleContactMsgController::class, 'index'])->name('page.multi.msg');
-        Route::get('/whatsapp/chats/json', [MultipleContactMsgController::class, 'getChatsJson'])->name('whatsapp.chats.json');
-        Route::post('/whatsapp/enviar', [MultipleContactMsgController::class, 'enviarMensagem'])->name('whatsapp.enviar');
-
+        //Route::get('/whatsapp/chats/json', [MultipleContactMsgController::class, 'getChatsJson'])->name('whatsapp.chats.json');
+        //Route::post('/whatsapp/enviar', [MultipleContactMsgController::class, 'enviarMensagem'])->name('whatsapp.enviar');
 
         Route::get('/dashboard', [WhatsAppController::class, 'dashboard'])->name('dashboard');
         Route::get('/contatos', [WhatsAppController::class, 'getContacts'])->name('get.contatos');
@@ -80,11 +77,11 @@ Route::middleware(['auth'])->group(function () {
     /*Route::get('/conectarwgw', [ConnectionController::class, 'conectarWgw']);
     Route::get('/gerar-qrcode', [ConnectionController::class, 'gerarQrCode']);*/
     Route::get('/status-conexao', [ConnectionController::class, 'status']);
-    Route::post('/resetar-instancia', [ConnectionController::class, 'resetarInstancia']);
+    //Route::post('/resetar-instancia', [ConnectionController::class, 'resetarInstancia']);
     //Route::post('/desconectar', [ConnectionController::class, 'desconectar']);
 
     Route::get('/whatsapp/qrcode', [ConnectionController::class, 'gerarQrCode']);
-    Route::post('/whatsapp/generate-initial-qr', [ConnectionController::class, 'generateInitialQrCode']);
+    //Route::post('/whatsapp/generate-initial-qr', [ConnectionController::class, 'generateInitialQrCode']);
 
     /*Route::get('/whatsapp/status', [ConnectionController::class, 'status'])->name('whatsapp.status');
     Route::post('/whatsapp/restart', [ConnectionController::class, 'restartInstance']);
@@ -124,4 +121,6 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('users', UserController::class);
     });
+
+    Broadcast::routes();
 });

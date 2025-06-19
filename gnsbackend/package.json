@@ -8,12 +8,12 @@
         "log:monitor": "php log-watcher.php storage/logs/laravel.log"
     },
     "devDependencies": {
-        "@laravel/echo-vue": "^2.1.5",
+        "@laravel/echo-vue": "^2.1.6",
         "@tailwindcss/vite": "^4.0.0",
         "axios": "^1.8.2",
         "bootstrap-icons": "^1.11.3",
         "concurrently": "^9.0.1",
-        "laravel-echo": "^2.1.5",
+        "laravel-echo": "^2.1.6",
         "laravel-vite-plugin": "^1.2.0",
         "pusher-js": "^8.4.0",
         "sass": "^1.86.3",

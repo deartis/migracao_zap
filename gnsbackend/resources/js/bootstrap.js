@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import './echo.js';
 // import Echo from 'laravel-echo';
 // import Pusher from 'pusher-js';
 //

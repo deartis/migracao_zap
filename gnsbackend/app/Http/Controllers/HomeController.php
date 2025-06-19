@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\StatusConnection;
 use App\Models\Historic;
 //use Illuminate\Http\Request;
 use GuzzleHttp\Psr7\Request;
@@ -10,6 +11,7 @@ class HomeController extends Controller
 {
     public function index()
     {
+        event(new StatusConnection());
         // orderBy('created_at', 'desc')->paginate(10);
         $historico = Historic::where('user_id', auth()->id())->orderByDesc('updated_at')->paginate(5);
         $user = auth()->user();

@@ -27,8 +27,6 @@ class CheckInstanceConnection
     {
         $user = auth()->user();
 
-        Log::info('Executou o hook');
-
         if ($user && $user->role === 'nu') {
             if(!$user->enabled){
                 Log::info('Usuário ainda bloqueado aguarde...');
