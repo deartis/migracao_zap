@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Instances;
 use App\Services\PhoneValidator;
 use App\Services\WhatsGwService;
 use Illuminate\Http\Request;
@@ -15,28 +16,44 @@ class CheckInstanceConnection
 
     protected $serviceWGW;
 
-    public function __construct(WhatsGwService $serviceWGW){
+    public function __construct(WhatsGwService $serviceWGW)
+    {
         $this->serviceWGW = $serviceWGW;
     }
+
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response) $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         $user = auth()->user();
+        $instance = Instances::where('user_id', $user->id)->first();
+        $status = $this->serviceWGW->getStatus($user->instance_id);
 
         if ($user && $user->role === 'nu') {
-            if(!$user->enabled){
+            if (!$user->enabled) {
                 Log::info('Usuário ainda bloqueado aguarde...');
                 return redirect('/')->with('error', 'Usuário bloqueado, tente mais tarde!');
             }
             if (!$user->instance_id) {
-                Log::info('Veio criar uma nova instância');
-                $this->serviceWGW->newStance();
+                Log::info('Usuario sem instancia');
                 return redirect()->route('page.connection')->with('error', 'Você não tem nenhum aparelho ativo.');
             }
+
+            if ($instance->connected) {
+                if ($status['phone_number']) {
+                    if ($status['phone_number'] !== $user->number) {
+                        Log::info("O numero conectado nao e o mesmo do seu cadastro\n, por favor,
+                        Entre em contato com o suporte ou use o aparelho com numero de seu cadastro!");
+                        return redirect()->route('page.connection')->with('error', 'Voce esta tentando se conectar com um numero diferente do cadastrado.');
+                    }
+                    Log::info("O numero e o mesmo do cadastro");
+                }
+                Log::info('Veio mostrar que esta conectado!', [$status]);
+            }
+
         }
 
         return $next($request);

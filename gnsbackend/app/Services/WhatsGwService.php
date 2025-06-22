@@ -66,19 +66,18 @@ class WhatsGwService
 
             $dados = $response->json();
 
+            Log::info('------------------------Start Dados ServiceGW----------------------------------');
             Log::info($dados);
-            Log::info('------------------------------------------------------------------');
+            Log::info('-------------------------End Dados ServiceGW-----------------------------------');
 
             $instanciaId = $dados['w_instancia_id'];
 
             if($dados['result'] === 'success'){
                 $filename = "qrcodes/qrcode_$instanciaId.png";
-                Log::info("Salvou", [
-                    'filename' => $filename,
-                    'instancia' => $instanciaId,
-                ]);
+                Log::info("Pegou o nome do arquivo");
                 Instances::updateOrCreate([
                     'user_id' => $user->id,
+                ],[
                     'instance_id' => $dados['w_instancia_id'],
                     'token' => $user->id,
                     'qrcode' => $filename
@@ -106,9 +105,10 @@ class WhatsGwService
                 'apikey' => $this->apiKey,
                 'w_instancia_id' => $instanceId,
             ]);
-            Log::info('=========================');
-            Log::info($response);
-            Log::info('=========================');
+
+            if(!$response->successful()){
+                return $response->json();
+            }
 
             return $response->json();
 
@@ -116,6 +116,10 @@ class WhatsGwService
             Log::error("Erro ao obter status: ", [$exception->getMessage()]);
             return ['status' => 'error', 'message' => 'Erro ao obter status da instância'];
         }
+    }
+
+    public function delInstance($instance_id){
+        $user = auth()->user();
     }
 
     public function getActiveChats(){

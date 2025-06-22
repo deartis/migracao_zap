@@ -25,10 +25,6 @@ Route::middleware(['auth'])->get('/whatsapp/token', function () {
 
 Route::post('/webhookqrcode', [WebhookController::class, 'webhooks'])->name('webhook.qrcode');
 
-Route::get('/teste-reverb', function() {
-    return view('teste-reverb');
-});
-
 Route::middleware(['auth'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
     //Teste de novo método simples
@@ -74,6 +70,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/whatsapp/status', [WhatsAppController::class, 'status'])->name('whatsapp.status');
 
     Route::get('/connection', [ConnectionController::class, 'index'])->name('page.connection');
+    Route::post('/new-instance', [ConnectionController::class, 'newInstance'])->name('new.instance');
     /*Route::get('/conectarwgw', [ConnectionController::class, 'conectarWgw']);
     Route::get('/gerar-qrcode', [ConnectionController::class, 'gerarQrCode']);*/
     Route::get('/status-conexao', [ConnectionController::class, 'status']);

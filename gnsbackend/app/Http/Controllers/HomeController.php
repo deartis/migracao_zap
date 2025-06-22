@@ -11,7 +11,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        event(new StatusConnection());
+        //event(new StatusConnection());
         // orderBy('created_at', 'desc')->paginate(10);
         $historico = Historic::where('user_id', auth()->id())->orderByDesc('updated_at')->paginate(5);
         $user = auth()->user();

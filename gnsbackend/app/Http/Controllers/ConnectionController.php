@@ -1,9 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Instances;
 use App\Services\WhatsGwService;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -13,32 +15,61 @@ class ConnectionController extends Controller
 {
     private const WHATSGW_BASE_URL = 'https://app.whatsgw.com.br/api/WhatsGw/';
 
-    /**
-     * Exibe a página de conexão
-     */
-    public function index()
+    public function index(WhatsGwService $whatsGwService)
     {
         $user = auth()->user();
         $instance = Instances::where('user_id', $user->id)->first();
 
-        Log::info($instance);
+        if(!$user->instance_id){
+            $instance->instance_id = null;
+            $instance->connected = false;
+            $instance->status = 'disconnected';
+            $instance->qrcode = null;
+            $instance->save();
 
-        return view('pages.connect',[
+            $mostrar_modal = true;
+        }else{
+            $mostrar_modal = false;
+        }
+
+        $status = $whatsGwService->getStatus($user->instance_id);
+
+        Log::info("Connection",[$status]);
+
+        if($status['result'] === 'success' && $status['phone_state'] === 'connected'){
+            $instance->connected = true;
+            $instance->status = "connected";
+            $instance->save();
+            Log::info('Ta connectado');
+        }
+
+        return view('pages.connect', [
             'connected' => $instance->connected,
-            'qrcode' => $instance->qrcode
+            'qrcode' => $instance->qrcode,
+            'mostrar_modal' => $mostrar_modal
         ]);
     }
 
-    /**
-     * Verifica o status da conexão WhatsApp
-     */
+    public function newInstance(WhatsGwService $whatsGwService, Request $request){
+        $user = auth()->user();
+        $status = $whatsGwService->getStatus($user->instance_id);
+
+        if(!$user->instance_id){
+            Log::info("Gerando nova Instancia");
+            $whatsGwService->newStance();
+            return redirect()->route('page.connection')->with('success','Aqui gera a nova instancia');
+        }
+
+        Log::info($status);
+    }
+
     public function status(WhatsGwService $whatsGwService)
     {
         try {
             $user = auth()->user();
             $status = $whatsGwService->getStatus($user->instance_id);
 
-            Log::info('==========  Status: '.$status['phone_state'].' ===========');
+            Log::info('==========  Status: ' . $status['phone_state'] . ' ===========');
 
             return response()->json([
                 'status' => $status['phone_state'],
@@ -84,9 +115,6 @@ class ConnectionController extends Controller
         ]);
     }
 
-    /**
-     * Retorna o QR Code em base64
-     */
     public function qrcode(): JsonResponse
     {
         try {
@@ -141,9 +169,6 @@ class ConnectionController extends Controller
         }
     }
 
-    /**
-     * Reinicia a instância do WhatsApp
-     */
     public function restartInstance(): JsonResponse
     {
         try {
@@ -205,72 +230,6 @@ class ConnectionController extends Controller
         }
     }
 
-    /**
-     * Desconecta o dispositivo WhatsApp
-     */
-    public function disconnect(): JsonResponse
-    {
-        try {
-            $user = auth()->user();
-
-            if (!$user->instance_id) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Instance ID não encontrado'
-                ], 400);
-            }
-
-            $response = Http::timeout(10)->asForm()->post(self::WHATSGW_BASE_URL . 'LogoutDevice', [
-                'apikey' => config('whatsgw.apiKey'),
-                'w_instancia_id' => $user->instance_id,
-            ]);
-
-            if (!$response->successful()) {
-                Log::error('Erro ao desconectar WhatsApp', [
-                    'status_code' => $response->status(),
-                    'response' => $response->body(),
-                    'user_id' => $user->id,
-                    'instance_id' => $user->instance_id
-                ]);
-
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Erro na API externa ao desconectar'
-                ], 500);
-            }
-
-            // Remove QR Code após desconectar
-            $qrPath = "qrcodes/qrcode_{$user->instance_id}.png";
-            if (Storage::disk('public')->exists($qrPath)) {
-                Storage::disk('public')->delete($qrPath);
-            }
-
-            Log::info('WhatsApp desconectado com sucesso', [
-                'user_id' => $user->id,
-                'instance_id' => $user->instance_id
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Desconectado com sucesso'
-            ]);
-
-        } catch (Exception $e) {
-            Log::error('Exceção ao desconectar WhatsApp', [
-                'error' => $e->getMessage(),
-                'user_id' => auth()->id()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'error' => 'Erro interno do servidor'
-            ], 500);
-        }
-    }
-
-    /**
-     * Limpa QR Codes antigos (pode ser chamado por um comando/job)
-     */
     public function cleanupOldQrCodes(): JsonResponse
     {
         try {

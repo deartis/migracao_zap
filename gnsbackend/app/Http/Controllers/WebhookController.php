@@ -10,18 +10,18 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
+
 /**
  * WebhookController
  *
  * Handles incoming webhooks for chat events and QR code updates.
  */
-
 class WebhookController extends Controller
 {
     public function webhooks(Request $request)
     {
         $data = $request->all();
-        Log::info('Request: ', $data);
+        Log::info('Request: ', [$data]);
 
         if ($data['event'] === 'chats') {
             $instanciaId = $data['w_instancia_id'] ?? null;
@@ -49,23 +49,37 @@ class WebhookController extends Controller
             return response()->json(['status' => 'ok']);
         }
 
-//        if ($request->input('event') !== 'qrcode') {
-//            return response()->json(['status' => 'ignored']);
-//        }
+        if ($data['event'] === 'qrcode') {
+            $base64Image = $request->input('qrcode');
+            $instanciaId = $request->input('w_instancia_id');
 
-        $base64Image = $request->input('qrcode');
-        $instanciaId = $request->input('w_instancia_id');
+            // Remove o prefixo data:image/png;base64,
+            $base64Image = preg_replace('/^data:image\/[^;]+;base64,/', '', $base64Image);
 
-        // Remove o prefixo data:image/png;base64,
-        $base64Image = preg_replace('/^data:image\/[^;]+;base64,/', '', $base64Image);
+            $imageData = base64_decode($base64Image);
+            $filename = "qrcodes/qrcode_$instanciaId.png";
 
-        $imageData = base64_decode($base64Image);
-        $filename = "qrcodes/qrcode_$instanciaId.png";
+            Storage::disk('public')->put($filename, $imageData);
 
-        Storage::disk('public')->put($filename, $imageData);
+            Log::info("QR Code salvo em: $filename");
+        }
 
-        Log::info("QR Code salvo em: $filename");
+        if($data['event'] === 'phonestate'){
+            if($data['state'] === 'connected'){
+                $this->setStatus();
+            }elseif($data['state'] === 'disconnected'){
+                if($data['cause'] === 'phoneAuthed'){
+                    Log::info('Usuario desconectou no aparelho');
+                    Log::info('mudar o status da instance para desconnected');
+                }
+            }
+        }
 
         return response()->json(['status' => 'ok']);
+    }
+
+    private function setStatus(){
+        $user = auth()->user();
+        Log::info($user);
     }
 }
