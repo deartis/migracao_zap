@@ -10,6 +10,7 @@ use App\Http\Controllers\SingleContactController;
 use App\Http\Controllers\ToRespondMsgController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
+use App\Models\Instances;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebhookController;
 
@@ -78,17 +79,27 @@ Route::middleware(['auth'])->group(function () {
     //Route::post('/desconectar', [ConnectionController::class, 'desconectar']);
 
     Route::get('/whatsapp/qrcode', [ConnectionController::class, 'gerarQrCode']);
+    Route::get('/whatsapp/restart', [ConnectionController::class, 'restartInstance'])->name('instancia.reiniciar');
     //Route::post('/whatsapp/generate-initial-qr', [ConnectionController::class, 'generateInitialQrCode']);
 
     /*Route::get('/whatsapp/status', [ConnectionController::class, 'status'])->name('whatsapp.status');
-    Route::post('/whatsapp/restart', [ConnectionController::class, 'restartInstance']);
     Route::post('/whatsapp/disconnect', [ConnectionController::class, 'disconnect']);
     Route::post('/whatsapp/generate-initial-qr', [ConnectionController::class, 'generateInitialQrCode'])
         ->middleware('auth');*/
 
     /*Route::get('/whatsapp/status', [ConnectionController::class, 'verificarStatus']);*/
 
+    // routes/web.php
     Route::get('/qrcode-atualizar', function () {
+
+        $instance = Instances::where('user_id',auth()->id())->first(); // ou filtre por usuário
+        return response()->json([
+            'connected' => $instance->connected,
+            'expired' => $instance->expired_qrcode,
+            'qrcode' => $instance->qrcode ? asset('storage/' . $instance->qrcode) : null,
+        ]);
+    });
+   /* Route::get('/qrcode-atualizar', function () {
         $diretorio = storage_path('app/public/qrcodes');
         $arquivos = \Illuminate\Support\Facades\File::files($diretorio);
 
@@ -104,7 +115,7 @@ Route::middleware(['auth'])->group(function () {
         $urlQrCode = asset('storage/qrcodes/' . $nomeArquivo);
 
         return response()->json(['qrcode_url' => $urlQrCode]);
-    })->name('qrcode.atualizar');
+    })->name('qrcode.atualizar');*/
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('page.profile');
     Route::put('/profile/{user}', [ProfileController::class, 'update'])->name('page.update.profile');

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Instances;
 use App\Services\WhatsGwService;
 use Exception;
-use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -13,54 +13,82 @@ use Illuminate\Http\JsonResponse;
 
 class ConnectionController extends Controller
 {
-    private const WHATSGW_BASE_URL = 'https://app.whatsgw.com.br/api/WhatsGw/';
-
     public function index(WhatsGwService $whatsGwService)
     {
         $user = auth()->user();
         $instance = Instances::where('user_id', $user->id)->first();
 
-        if(!$user->instance_id){
-            $instance->instance_id = null;
-            $instance->connected = false;
-            $instance->status = 'disconnected';
-            $instance->qrcode = null;
-            $instance->save();
+        Log::info($instance->qrcode_started_at??null);
+
+        if (!$instance || !$instance->instance_id) {
+            $instance = Instances::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'instance_id' => null,
+                    'connected' => false,
+                    'token' => $user->id,
+                    'status' => 'disconnected',
+                    'qrcode' => null,
+                ]
+            );
 
             $mostrar_modal = true;
-        }else{
+        } else {
             $mostrar_modal = false;
         }
 
-        $status = $whatsGwService->getStatus($user->instance_id);
+        $status = $whatsGwService->getStatus($instance->instance_id);
 
-        Log::info("Connection",[$status]);
+        Log::info("Connection", [$status]);
 
-        if($status['result'] === 'success' && $status['phone_state'] === 'connected'){
-            $instance->connected = true;
-            $instance->status = "connected";
+        if ($status['result'] === 'success') {
+            if ($status['phone_state'] === 'connected') {
+                $instance->connected = true;
+                $instance->status = "connected";
+                Log::info('Tá conectado');
+            } elseif ($status['phone_state'] === 'disconnected') {
+                $instance->connected = true;
+                $instance->status = "disconnected";
+                Log::info('Tá desconectado!');
+            }
+
             $instance->save();
-            Log::info('Ta connectado');
         }
 
+        $statusDb = ($instance->status !== 'disconnected' && $instance->status !== 'waiting_qrcode' && $instance->status !== 'waiting_connection') ?? false;
+
+        //dd($statusDb);
+
         return view('pages.connect', [
-            'connected' => $instance->connected,
+            'connected' => $statusDb,
             'qrcode' => $instance->qrcode,
-            'mostrar_modal' => $mostrar_modal
+            'mostrar_modal' => $mostrar_modal,
+            'instance' => $instance,
         ]);
     }
 
-    public function newInstance(WhatsGwService $whatsGwService, Request $request){
+
+
+    public function newInstance(WhatsGwService $whatsGwService)
+    {
         $user = auth()->user();
         $status = $whatsGwService->getStatus($user->instance_id);
+        $instance = Instances::where('user_id', $user->id)->first();
 
-        if(!$user->instance_id){
+        Log::info('Veio atualizar o banco');
+        $instance->update([
+            'status' => 'waiting_qrcode',
+            'qrcode_started_at' => Carbon::now(),
+        ]);
+
+        if (!$user->instance_id) {
             Log::info("Gerando nova Instancia");
-            $whatsGwService->newStance();
-            return redirect()->route('page.connection')->with('success','Aqui gera a nova instancia');
+            $whatsGwService->newInstance();
+            return redirect()->route('page.connection')->with('success', 'Aqui gera a nova instancia');
         }
 
         Log::info($status);
+        return response()->json(['status'=>'ok']);
     }
 
     public function status(WhatsGwService $whatsGwService)
@@ -68,8 +96,6 @@ class ConnectionController extends Controller
         try {
             $user = auth()->user();
             $status = $whatsGwService->getStatus($user->instance_id);
-
-            Log::info('==========  Status: ' . $status['phone_state'] . ' ===========');
 
             return response()->json([
                 'status' => $status['phone_state'],
@@ -93,12 +119,11 @@ class ConnectionController extends Controller
     public function gerarQrCode()
     {
         $user = auth()->user();
-        $instanciaId = $user->instance_id;
         $apiKey = config('whatsgw.apiKey');
 
         //$this->restartInstance($apiKey, $instanciaId, '0');
 
-        $path = "qrcodes/qrcode_$user->id.png";
+        $path = "qrcodes/qrcode_$user->instance_id.png";
         //Log::info($path);
 
         if (!Storage::disk('public')->exists($path)) {
@@ -126,7 +151,7 @@ class ConnectionController extends Controller
                 ], 400);
             }
 
-            $path = "qrcodes/qrcode_{$user->id}.png";
+            $path = "qrcodes/qrcode_$user->id.png";
 
             if (!Storage::disk('public')->exists($path)) {
                 return response()->json([
@@ -173,6 +198,8 @@ class ConnectionController extends Controller
     {
         try {
             $user = auth()->user();
+            $urlBase = config('whatsgw.apiUrl');
+            $instances = Instances::where('user_id', $user->id)->first();
 
             if (!$user->instance_id) {
                 return response()->json([
@@ -182,12 +209,15 @@ class ConnectionController extends Controller
             }
 
             // Remove QR Code antigo se existir
-            $oldQrPath = "qrcodes/qrcode_{$user->instance_id}.png";
+            $oldQrPath = "qrcodes/qrcode_$user->instance_id.png";
             if (Storage::disk('public')->exists($oldQrPath)) {
                 Storage::disk('public')->delete($oldQrPath);
+                $instances->update([
+                    'qrcode' => null
+                ]);
             }
 
-            $response = Http::timeout(15)->asForm()->post(self::WHATSGW_BASE_URL . 'RestartInstance', [
+            $response = Http::timeout(15)->asForm()->post($urlBase . '/RestartInstance', [
                 'apikey' => config('whatsgw.apiKey'),
                 'w_instancia_id' => $user->instance_id,
                 'type' => 0,
@@ -211,6 +241,14 @@ class ConnectionController extends Controller
                 'user_id' => $user->id,
                 'instance_id' => $user->instance_id
             ]);
+
+            if($response->successful()){
+                $instances->update([
+                    'status' => 'waiting_qrcode',
+                    'qrcode_started_at' => now(),
+                    'expired_qrcode' => false
+                ]);
+            }
 
             return response()->json([
                 'success' => true,

@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\Events\ConnectionStatusChanged;
+//use App\Events\ConnectionStatusChanged;
 use App\Models\Instances;
-use Endroid\QrCode\Logo\Logo;
+//use Endroid\QrCode\Logo\Logo;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\Services\PhoneValidator;
+//use App\Services\PhoneValidator;
 
 class WhatsGwService
 {
@@ -53,7 +53,7 @@ class WhatsGwService
         return $response->json();
     }
 
-    public function newStance()
+    public function newInstance()
     {
         $user = auth()->user();
 

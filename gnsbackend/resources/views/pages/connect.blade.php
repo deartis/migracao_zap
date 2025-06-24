@@ -4,12 +4,31 @@
 
     @if($connected)
         <div class="alert alert-success">✅ Conectado ao WhatsApp</div>
-    @elseif($qrcode)
+    @elseif($qrcode !== null)
         <p>Escaneie o QR Code com o WhatsApp</p>
-        <img src="{{ asset('storage/' . $qrcode) }}" style="max-width: 300px;">
+        <img id="qrcode-img" src="{{ asset('storage/' . $qrcode) }}" style="max-width: 300px;" alt="QRCODE">
+    @elseif($instance->expired_qrcode)
+        <button class="btn btn-warning" onclick="location.href='{{ route('instancia.reiniciar') }}'">🔁 Tentar novamente</button>
     @else
-        <p>Inicie a conexão para gerar o QR Code.</p>
+        <div>
+            <h4>Aguardando...</h4>
+        </div>
     @endif
+
+    {{--@if($connected)
+        <div class="alert alert-success">✅ Conectado ao WhatsApp</div>
+    @elseif($qrcode !== null)
+        <p>Escaneie o QR Code com o WhatsApp</p>
+        <img src="{{ asset('storage/' . $qrcode) }}" style="max-width: 300px;" alt="QRCODE">
+    @elseif($instance->expired_qrcode)
+        <button class="btn btn-warning" onclick="location.href='{{ route('instancia.reiniciar') }}'">🔁 Tentar
+            novamente
+        </button>
+    @else
+        <div>
+            <h4>Aguardando...</h4>
+        </div>
+    @endif--}}
 
     {{-- Modal --}}
     <div class="modal fade" id="modalConexao" tabindex="-1" aria-labelledby="modalConexao" aria-hidden="true">
@@ -31,16 +50,48 @@
             </div>
         </div>
     </div>
-@push('scripts')
-    @if($mostrar_modal ?? !$mostrar2_modal)
+    @push('scripts')
+        @if($mostrar_modal ?? !$mostrar2_modal)
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    var modal = new bootstrap.Modal(document.getElementById('modalConexao'));
+                    modal.show();
+                });
+            </script>
+        @endif
+
         <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                var modal = new bootstrap.Modal(document.getElementById('modalConexao'));
-                modal.show();
-            });
+            const qrcodeImg = document.getElementById('qrcode-img');
+            if (qrcodeImg) {
+                setInterval(() => {
+                    fetch('/qrcode-atualizar')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.connected) {
+                                console.log(data.connected);
+                                location.reload(); // recarrega a view para exibir "✅ Conectado"
+                            } else if (data.expired) {
+                                location.reload(); // exibe botão de tentar novamente
+                            } else if (data.qrcode) {
+                                console.log(data.qrcode)
+                                qrcodeImg.src = data.qrcode + '?t=' + new Date().getTime(); // evita cache
+                            }
+                        });
+                }, 3000);
+            }
         </script>
-    @endif
-@endpush
+    @endpush
+
+    {{--@push('scripts')
+        @if($mostrar_modal)
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    var modal = new bootstrap.Modal(document.getElementById('modalConexao'));
+                    modal.show();
+                });
+            </script>
+        @endif
+    @endpush--}}
 @endsection
 
 {{-- <script>
